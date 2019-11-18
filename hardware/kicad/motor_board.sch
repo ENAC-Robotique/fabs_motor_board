@@ -1,6 +1,6 @@
 EESchema Schematic File Version 4
 LIBS:motor_board-cache
-EELAYER 30 0
+EELAYER 26 0
 EELAYER END
 $Descr A3 16535 11693
 encoding utf-8
@@ -506,9 +506,9 @@ Wire Wire Line
 Wire Wire Line
 	14550 1350 15150 1350
 Text Label 14550 1250 0    50   ~ 0
-ENC2B
-Text Label 14550 1350 0    50   ~ 0
 ENC2A
+Text Label 14550 1350 0    50   ~ 0
+ENC2B
 Wire Wire Line
 	15150 1950 14550 1950
 Wire Wire Line
@@ -2207,7 +2207,7 @@ Wire Wire Line
 	1600 2250 1600 2750
 Connection ~ 1600 2750
 Wire Wire Line
-	1600 2750 1250 2750
+	1600 2750 1350 2750
 Wire Wire Line
 	2050 2250 2050 2750
 Connection ~ 2050 2750
@@ -2235,7 +2235,7 @@ Wire Wire Line
 	1600 1950 1600 1600
 Connection ~ 1600 1600
 Wire Wire Line
-	1600 1600 1250 1600
+	1600 1600 1350 1600
 Wire Wire Line
 	2050 1950 2050 1600
 Connection ~ 2050 1600
@@ -2501,13 +2501,13 @@ Wire Wire Line
 $Comp
 L _GRZ_Power:+5V #PWR016
 U 1 1 5DD1933B
-P 6700 2000
-F 0 "#PWR016" H 6700 1925 50  0001 C CNN
-F 1 "+5V" V 6700 2130 50  0000 L CNN
-F 2 "" H 6700 2000 50  0001 C CNN
-F 3 "" H 6700 2000 50  0001 C CNN
-	1    6700 2000
-	0    1    1    0   
+P 7900 2000
+F 0 "#PWR016" H 7900 1925 50  0001 C CNN
+F 1 "+5V" V 7900 2130 50  0000 L CNN
+F 2 "" H 7900 2000 50  0001 C CNN
+F 3 "" H 7900 2000 50  0001 C CNN
+	1    7900 2000
+	0    1    -1   0   
 $EndComp
 Wire Wire Line
 	6300 2000 6150 2000
@@ -2525,4 +2525,68 @@ F 3 "~" H 6450 2000 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	6600 2000 6700 2000
+$Comp
+L mySymbols:Power_pads P1
+U 1 1 5DD3FFAA
+P 850 2050
+F 0 "P1" H 623 2109 50  0000 R CNN
+F 1 "Power_pads" H 623 2200 50  0000 R CNN
+F 2 "myFootprints:Power_pads" H 700 2200 50  0001 C CNN
+F 3 "" H 850 2050 50  0001 C CNN
+	1    850  2050
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	700  2100 700  1800
+Wire Wire Line
+	700  1800 1350 1800
+Wire Wire Line
+	1350 1800 1350 1600
+Connection ~ 1350 1600
+Wire Wire Line
+	1350 1600 1250 1600
+Wire Wire Line
+	700  2200 700  2500
+Wire Wire Line
+	700  2500 1350 2500
+Wire Wire Line
+	1350 2500 1350 2750
+Connection ~ 1350 2750
+Wire Wire Line
+	1350 2750 1250 2750
+$Comp
+L _GRZ_Diodes:PMEG2010EB D2
+U 1 1 5DD70BDF
+P 6800 2000
+F 0 "D2" H 6850 2263 50  0000 C CNN
+F 1 "PMEG2010EB" H 6850 2172 50  0000 C CNN
+F 2 "_Diodes_GRZ:PMEG2010EB" H 6800 2000 60  0001 C CNN
+F 3 "" H 6800 2000 60  0001 C CNN
+	1    6800 2000
+	1    0    0    -1  
+$EndComp
+$Comp
+L _GRZ_Diodes:PMEG2010EB D3
+U 1 1 5DDBB3E3
+P 7500 1600
+F 0 "D3" V 7504 1726 50  0000 L CNN
+F 1 "PMEG2010EB" V 7595 1726 50  0000 L CNN
+F 2 "_Diodes_GRZ:PMEG2010EB" H 7500 1600 60  0001 C CNN
+F 3 "" H 7500 1600 60  0001 C CNN
+	1    7500 1600
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7000 2000 7500 2000
+Wire Wire Line
+	7500 1800 7500 2000
+Connection ~ 7500 2000
+Wire Wire Line
+	7500 2000 7900 2000
+Wire Wire Line
+	7500 1500 7500 1150
+Wire Wire Line
+	7500 1150 7050 1150
+Text Label 7050 1150 0    50   ~ 0
+USB_VBUS
 $EndSCHEMATC
