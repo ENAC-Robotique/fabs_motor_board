@@ -294,10 +294,6 @@ Wire Wire Line
 Wire Wire Line
 	8250 6200 8700 6200
 Wire Wire Line
-	8700 6400 8250 6400
-Wire Wire Line
-	8250 6500 8700 6500
-Wire Wire Line
 	8700 6600 8250 6600
 Text Label 8250 5100 0    50   ~ 0
 LED_CAN
@@ -313,10 +309,6 @@ Text Label 8250 6000 0    50   ~ 0
 PWM3A
 Text Label 8250 6200 0    50   ~ 0
 PWM3B
-Text Label 8250 6400 0    50   ~ 0
-PWM4A
-Text Label 8250 6500 0    50   ~ 0
-PWM4B
 Text Label 8250 6600 0    50   ~ 0
 LED_I2C
 Wire Wire Line
@@ -543,12 +535,8 @@ Text Label 10850 7100 2    50   ~ 0
 TLE_EF_2
 Wire Wire Line
 	8700 5900 8250 5900
-Wire Wire Line
-	8700 6300 8250 6300
 Text Label 8250 5900 0    50   ~ 0
 TLE_EF_3
-Text Label 8250 6300 0    50   ~ 0
-TLE_EF_4
 $Comp
 L mySymbols:TLE52052GAUMA1 IC2
 U 1 1 5DC1B0D1
@@ -2589,4 +2577,7 @@ Wire Wire Line
 	7500 1150 7050 1150
 Text Label 7050 1150 0    50   ~ 0
 USB_VBUS
+NoConn ~ 8700 6300
+NoConn ~ 8700 6400
+NoConn ~ 8700 6500
 $EndSCHEMATC
