@@ -2,6 +2,8 @@
 #include "motor_control.h"
 #include "pwm_config.h"
 #include <math.h>
+#include <ch.h>
+#include "odometry.h"
 
 /*
 MOT1 : TIM5_CH1 TIM5_CH2
@@ -59,3 +61,28 @@ void setMot3(float speed){
   }
 }
 
+
+
+static THD_WORKING_AREA(waPID, 304);	// declaration de la pile du thread blinker
+static void motor_control_pid (void *arg)			// fonction d'entrée du thread blinker
+{
+  (void)arg;
+  chRegSetThreadName("PID");
+
+  unsigned long lastTime = chVTGetSystemTime();
+
+  while (true) {
+    systime_t now = chVTGetSystemTime();
+    float elapsed = ((float)(now - lastTime)) / CH_CFG_ST_FREQUENCY;
+    lastTime = now;
+
+    update_odometry(elapsed);
+
+    chThdSleepMilliseconds(100);
+  }
+}
+
+
+void start_motor_control_pid() {
+  chThdCreateStatic(waPID, sizeof(waPID), NORMALPRIO, &motor_control_pid, NULL);
+}

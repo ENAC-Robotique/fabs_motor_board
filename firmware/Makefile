@@ -149,6 +149,8 @@ CSRC = $(STARTUPSRC) \
        pwm_config.c \
        encoders.c \
        motor_control.c \
+       odometry.c \
+       utils.c \
        main.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
@@ -242,7 +244,7 @@ UINCDIR =
 ULIBDIR =
 
 # List all user libraries here
-ULIBS =
+ULIBS = -lm
 
 #
 # End of user defines

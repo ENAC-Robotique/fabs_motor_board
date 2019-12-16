@@ -19,6 +19,7 @@
 
 #include "encoders.h"
 #include "motor_control.h"
+#include "odometry.h"
 
 // declaration des prototypes de fonction
 // ces declarations sont necessaires pour remplir le tableau commands[] ci-dessous
@@ -29,6 +30,8 @@ static void cmd_uid(BaseSequentialStream *lchp, int argc,const char* const argv[
 static void cmd_param(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 static void cmd_encoders(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 static void cmd_motors(BaseSequentialStream *lchp, int argc,const char* const argv[]);
+static void cmd_pos(BaseSequentialStream *lchp, int argc,const char* const argv[]);
+static void cmd_speed(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 
 static const ShellCommand commands[] = {
   {"mem", cmd_mem},		// affiche la mémoire libre/occupée
@@ -38,7 +41,9 @@ static const ShellCommand commands[] = {
   {"param", cmd_param},		// fonction à but pedagogique qui affiche les
 				//   paramètres qui lui sont passés
   {"enc", cmd_encoders},	// affiche position des encoders
-  {"mot", cmd_motors},	// affiche position des encoders
+  {"mot", cmd_motors},	// donne une consigne moteur
+  {"pos", cmd_pos},	// affiche position
+  {"speed", cmd_speed},	// donne une consigne de vitesse
   {NULL, NULL}			// marqueur de fin de tableau
 };
 
@@ -97,6 +102,24 @@ static void cmd_motors(BaseSequentialStream *lchp, int argc,const char* const ar
   }
 }
 
+static void cmd_speed(BaseSequentialStream *lchp, int argc,const char* const argv[])
+{
+  if (argc < 2) {  // si aucun paramètre n'a été passé à la commande param 
+    chprintf (lchp, "Usage: mot <speed> <omega>\r\n");
+  } else { // sinon (un ou plusieurs pararamètres passés à la commande param 
+      float speed = atof (argv[0]);
+      float omega = atof (argv[1]);
+      
+      if(speed >= -1.0 && speed <= 1.0 && omega >= -1.0 && omega <= 1.0) {
+        float cmd_left = CLAMP_TO(-1.0, 1.0, speed - omega);
+        float cmd_right = CLAMP_TO(-1.0, 1.0, -(speed + omega));
+        setMot1(cmd_left);
+        setMot2(cmd_right);
+      } else {
+        chprintf (lchp, "speed and omega must be between 0 and 1\r\n");
+      }
+  }
+}
 
 static void cmd_encoders(BaseSequentialStream *lchp, int argc,const char* const argv[])
 {
@@ -111,6 +134,15 @@ static void cmd_encoders(BaseSequentialStream *lchp, int argc,const char* const 
   }
 }
 
+
+static void cmd_pos(BaseSequentialStream *lchp, int argc,const char* const argv[])
+{
+  (void)argc;
+  (void)argv;
+  if (argc == 0) {   
+    chprintf (lchp, "%f\t%f\t%f\r\n", get_x(), get_y(), get_theta());
+  }
+}
 
 /*
   
