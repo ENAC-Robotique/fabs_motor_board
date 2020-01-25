@@ -44,6 +44,7 @@ static void blinker (void *arg)
   }
 }
 
+static THD_WORKING_AREA(waPowerCheck, 304);
 
 int main (void)
 {
@@ -65,6 +66,7 @@ int main (void)
   setMot3(0);
 
   chThdCreateStatic(waBlinker, sizeof(waBlinker), NORMALPRIO, &blinker, NULL); // lancement du thread 
+  chThdCreateStatic(waPowerCheck, sizeof(waPowerCheck), NORMALPRIO, &power_check, NULL); // lancement du thread 
   start_motor_control_pid();
   start_odom_report();
 
