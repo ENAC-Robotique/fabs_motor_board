@@ -11,7 +11,7 @@
 #include "rtcAccess.h"
 #include "printf.h"
 #include "portage.h"
-
+#include "usb_serial.h"
 
 /*===========================================================================*/
 /* START OF EDITABLE SECTION                                           */
@@ -356,7 +356,7 @@ void consoleInit (void)
    */
 
 #if CONSOLE_DEV_USB != 0
-  usbSerialInit(&SDU1, &USBDRIVER); 
+  usbSerialInit(&SDU1, &USBD1);
   chp = (BaseSequentialStream *) &SDU1;
 #else
   sdStart(&CONSOLE_DEV_SD, &ftdiConfig);

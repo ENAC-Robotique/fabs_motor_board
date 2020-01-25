@@ -10,3 +10,6 @@
 [submodule "firmware/chibios_svn_mirror"]
 	path = firmware/chibios_svn_mirror
 	url = https://github.com/alex31/chibios_svn_mirror.git
+[submodule "firmware/CMSIS_5"]
+	path = firmware/CMSIS_5
+	url = git@github.com:ARM-software/CMSIS_5.git

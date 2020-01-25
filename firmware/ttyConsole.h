@@ -3,7 +3,7 @@
 
 
 // USB : 1, SERIAL : 0
-#define CONSOLE_DEV_USB 0
+#define CONSOLE_DEV_USB 1
 
 #if CONSOLE_DEV_USB == 0
 #define CONSOLE_DEV_SD SD5
