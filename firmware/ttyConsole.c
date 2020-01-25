@@ -18,7 +18,8 @@
 /*===========================================================================*/
 
 #include "encoders.h"
-#include "motor_control.h"
+#include "speed_control.h"
+#include "motors.h"
 #include "odometry.h"
 
 // declaration des prototypes de fonction
@@ -104,20 +105,14 @@ static void cmd_motors(BaseSequentialStream *lchp, int argc,const char* const ar
 
 static void cmd_speed(BaseSequentialStream *lchp, int argc,const char* const argv[])
 {
-  if (argc < 2) {  // si aucun paramètre n'a été passé à la commande param 
-    chprintf (lchp, "Usage: mot <speed> <omega>\r\n");
+  if (argc < 3) {  // si aucun paramètre n'a été passé à la commande param 
+    chprintf (lchp, "Usage: mot <vx> <vy> <vtheta>\r\n");
   } else { // sinon (un ou plusieurs pararamètres passés à la commande param 
-      float speed = atof (argv[0]);
-      float omega = atof (argv[1]);
+      float vx = atof (argv[0]);
+      float vy = atof (argv[1]);
+      float vtheta = atof (argv[1]);
       
-      if(speed >= -1.0 && speed <= 1.0 && omega >= -1.0 && omega <= 1.0) {
-        float cmd_left = CLAMP_TO(-1.0, 1.0, speed - omega);
-        float cmd_right = CLAMP_TO(-1.0, 1.0, -(speed + omega));
-        setMot1(cmd_left);
-        setMot2(cmd_right);
-      } else {
-        chprintf (lchp, "speed and omega must be between 0 and 1\r\n");
-      }
+      set_speed_setPoint(vx, vy, vtheta);
   }
 }
 

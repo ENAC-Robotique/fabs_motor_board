@@ -144,14 +144,21 @@ CSRC = $(STARTUPSRC) \
        $(VARIOUS)/microrl/microrlShell.c \
        $(VARIOUS)/microrl/microrl.c \
        $(VARIOUS)/rtcAccess.c \
+       $(VARIOUS)/usb_serial.c \
        ttyConsole.c \
        globalVar.c \
-       pwm_config.c \
+       motors.c \
        encoders.c \
-       motor_control.c \
+       speed_control.c \
        odometry.c \
        utils.c \
+       ducklink/messages.c \
+       ducklink/communication.c \
        main.c
+
+# files extracted from ARM CMSIS DSP
+DSPBASE = cmsis_arm
+include $(DSPBASE)/files.mk
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -238,7 +245,8 @@ UDEFS = -DTRACE
 UADEFS =
 
 # List all user directories here
-UINCDIR =
+UINCDIR = ducklink \
+          cmsis_arm
 
 # List the user directory to look for the libraries here
 ULIBDIR =

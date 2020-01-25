@@ -17,4 +17,8 @@
 
 void initPwms(void);
 
+void setMot1(float speed);
+void setMot2(float speed);
+void setMot3(float speed);
+
 #endif // __PWM_CONFIG_H__

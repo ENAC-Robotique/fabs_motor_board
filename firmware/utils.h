@@ -8,6 +8,12 @@
 #define ABS(val) ((val) < 0 ? -(val) : (val))
 #endif
 
+#define MAKE_VECTOR3(name) float32_t name ## _data[] = {0, 0, 0};\
+arm_matrix_instance_f32 name = {\
+    .numRows = 3,\
+    .numCols = 1,\
+    .pData = name ## _data\
+};
 
 
 /**

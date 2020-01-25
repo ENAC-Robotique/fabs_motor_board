@@ -2,20 +2,29 @@
 #include <hal.h>
 #include "stdutil.h"		// necessaire pour initHeap
 #include "ttyConsole.h"		// fichier d'entête du shell
-#include "pwm_config.h"
 #include "encoders.h"
-#include "motor_control.h"
-
+#include "motors.h"
+#include "communication.h"
+#include "speed_control.h"
+#include "utils.h"
 
 ioline_t leds[] = {
   LINE_LED_GREEN,
-  LINE_LED_YELLOW,
-  LINE_LED_ORANGE,
-  LINE_LED_RED,
-  LINE_LED_CAN,
-  LINE_LED_SPI,
-  LINE_LED_UART,
-  LINE_LED_I2C,
+  //LINE_LED_YELLOW,
+  //LINE_LED_ORANGE,
+  //LINE_LED_RED,
+  //LINE_LED_CAN,
+  //LINE_LED_SPI,
+  //LINE_LED_UART,
+  //LINE_LED_I2C,
+};
+
+
+static const SerialConfig serialConfig =  {
+  57600,//115200,
+  0,
+  USART_CR2_STOP1_BITS | USART_CR2_LINEN,
+  0
 };
 
 
@@ -29,15 +38,9 @@ static void blinker (void *arg)
 
   while (true) {
     for(int i=0;i<NB_LEDS; i++) {
-      //palClearLine(leds[i]);
-      //int next = (i+1)%NB_LEDS;
-      //palSetLine(leds[next]);
       palToggleLine(leds[i]);
-      chThdSleepMilliseconds(100);
+      chThdSleepMilliseconds(200);
     }
-    //palToggleLine(LINE_LED_GREEN);
-    //palClearLine(LINE_LED_
-    //chThdSleepMilliseconds(100);
   }
 }
 
@@ -49,10 +52,13 @@ int main (void)
   chSysInit();
   initHeap();		// initialisation du "tas" pour permettre l'allocation mémoire dynamique 
 
+  sdInit();
+  sdStart(&SD5, &serialConfig);
+
   initPwms();
-  initEnc1(false);
+  initEnc1(true);
   initEnc2(true);
-  //initEnc3(false);
+  initEnc3(true);
   //initEnc4(false);
   setMot1(0);
   setMot2(0);
@@ -60,6 +66,7 @@ int main (void)
 
   chThdCreateStatic(waBlinker, sizeof(waBlinker), NORMALPRIO, &blinker, NULL); // lancement du thread 
   start_motor_control_pid();
+  start_odom_report();
 
   consoleInit();	// initialisation des objets liés au shell
   
