@@ -1,15 +1,12 @@
-[submodule "hardware/kicad/kicad_libs_GRZ"]
-	path = hardware/kicad/kicad_libs_GRZ
-	url = https://github.com/Fabien-B/kicad_libs_GRZ
-[submodule "hardware/kicad/kicad_libs_FBO"]
-	path = hardware/kicad/kicad_libs_FBO
-  url = git@github.com:Fabien-B/kicad_libs_FBO
 [submodule "firmware/chibios_enac_various_common"]
 	path = firmware/chibios_enac_various_common
 	url = https://github.com/alex31/chibios_enac_various_common.git
 [submodule "firmware/chibios_svn_mirror"]
 	path = firmware/chibios_svn_mirror
 	url = https://github.com/alex31/chibios_svn_mirror.git
-[submodule "firmware/CMSIS_5"]
-	path = firmware/CMSIS_5
-	url = git@github.com:ARM-software/CMSIS_5.git
+[submodule "hardware/kicad/kicad_libs_GRZ"]
+	path = hardware/kicad/kicad_libs_GRZ
+	url = https://github.com/Fabien-B/kicad_libs_GRZ
+[submodule "hardware/kicad/kicad_libs_FBO"]
+	path = hardware/kicad/kicad_libs_FBO
+	url = https://github.com/Fabien-B/kicad_libs_FBO
