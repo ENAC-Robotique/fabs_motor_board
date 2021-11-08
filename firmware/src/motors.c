@@ -65,17 +65,27 @@ void initPwms() {
 }
 
 
+pwmcnt_t getPwmCnt(float speed) {
+  if(fabs(speed) > 100.0) {
+    speed = 100.0;
+  } else {
+    speed = fabs(speed);
+  }
+  return (pwmcnt_t)((100.0 - speed)/100.0 * PWM_PERIOD);
+}
+
+
 // from 0 to PWM_PERDIOD at most
 // CW : IN1 PWM, IN2 HIGH
 // CCW: IN1 HIGH, IN1 PWM
 
 /**
- *  speed : from -1 to 1
+ *  speed : from -100 to 100
  *
  */
 void setMot1(float speed){
   // MOT1 : TIM5_CH1 TIM5_CH2
-  pwmcnt_t width = (1 - fabs(speed)) * PWM_PERIOD;
+  pwmcnt_t width = getPwmCnt(speed);
   // discimine the case where speed = 0 ?
   if(speed > 0) {
     pwmEnableChannel(&PWMD5, 0, width);
@@ -88,7 +98,7 @@ void setMot1(float speed){
 
 void setMot2(float speed){
   //MOT2 : TIM5_CH3 TIM5_CH4
-  pwmcnt_t width = (1 - fabs(speed)) * PWM_PERIOD;
+  pwmcnt_t width = getPwmCnt(speed);
   // discimine the case where speed = 0 ?
   if(speed > 0) {
     pwmEnableChannel(&PWMD5, 2, width);
@@ -101,7 +111,7 @@ void setMot2(float speed){
 
 void setMot3(float speed){
   //MOT3 : TIM1_CH1 TIM1_CH2
-  pwmcnt_t width = (1 - fabs(speed)) * PWM_PERIOD;
+  pwmcnt_t width = getPwmCnt(speed);
   // discimine the case where speed = 0 ?
   if(speed > 0) {
     pwmEnableChannel(&PWMD1, 0, width);
