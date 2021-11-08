@@ -5,7 +5,12 @@
 #include "printf.h"
 #include "globalVar.h"
 #include "utils.h"
+#include "communication.h"
 
+#define PERIOD_POS_REPORT 200
+#define PERIOD_SPEED_REPORT 200
+static msg_t sendPosReport(void);
+static msg_t sendSpeedReport(void);
 
 float speed_l, speed_theta = 0;
 float _x, _y, _theta = 0;
@@ -48,6 +53,10 @@ inline float32_t W_to_RW(float32_t w) {
 #endif
 
 void update_odometry(float32_t elapsed) {
+
+    // time of the last position report
+    static systime_t lastPosReportTime = 0;
+    static systime_t lastSpeedReportTime = 0;
 
     #if defined(DIFF_DRIVE) && !defined(CODING_WHEELS) && !defined(HOLONOMIC)
     int32_t delta_left = get_delta_enc1();
@@ -110,7 +119,65 @@ void update_odometry(float32_t elapsed) {
     #error "Make your mind bro! Do you have an holonomic robot or a diff drive ? If you have an holonomic you can't have coding wheels!"
     #endif
     
+
+    if(chVTTimeElapsedSinceX(lastPosReportTime) > TIME_MS2I(PERIOD_POS_REPORT)) {
+        if(sendPosReport() == MSG_OK) {
+            lastPosReportTime = chVTGetSystemTime();
+        }
+    }
+
+    if(chVTTimeElapsedSinceX(lastSpeedReportTime) > TIME_MS2I(PERIOD_SPEED_REPORT)) {
+        if(sendSpeedReport() == MSG_OK) {
+            lastSpeedReportTime = chVTGetSystemTime();
+        }
+    }
 }
+
+
+
+msg_t sendPosReport() {
+//         uint8_t *buffer;
+//         // get a free buffer. timeout of 5ms
+//         msg_t ret = chMBFetchTimeout(&mb_free_msgs, (msg_t *)&buffer, TIME_MS2I(5));
+//         if(ret == MSG_OK) {
+//             #if defined(HOLONOMIC)
+//             struct UpOdomReport odomReport = {
+//                 .x = _robotPos.pData[0],
+//                 .y = _robotPos.pData[1],
+//                 .theta = _robotPos.pData[2]
+//             };
+//             #else
+//                 #error "Not implemented"
+//             #endif
+//             up_odom_report_to_bytes(&odomReport, buffer);
+//             // post the new message for the communication thread. timeout of 10 ms
+//             (void)chMBPostTimeout(&mb_filled_msgs, (msg_t)buffer, TIME_MS2I(10));
+//         }
+//         return ret;
+}
+
+msg_t sendSpeedReport() {
+//         uint8_t *buffer;
+//         // get a free buffer. timeout of 5ms
+//         msg_t ret = chMBFetchTimeout(&mb_free_msgs, (msg_t *)&buffer, TIME_MS2I(5));
+//         if(ret == MSG_OK) {
+//             #if defined(HOLONOMIC)
+//             struct UpSpeedReport speedReport = {
+//                 .vx = _speed.pData[0],
+//                 .vy = _speed.pData[1],
+//                 .vtheta = _speed.pData[2]
+//             };
+//             #else
+//                 #error "Not implemented"
+//             #endif
+//             up_speed_report_to_bytes(&speedReport, buffer);
+//             // post the new message for the communication thread. timeout of 10 ms
+//             (void)chMBPostTimeout(&mb_filled_msgs, (msg_t)buffer, TIME_MS2I(10));
+//         }
+//         return ret;
+}
+
+
 
 float get_speed() {
 #if defined(DIFF_DRIVE)

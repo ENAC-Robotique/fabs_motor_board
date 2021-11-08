@@ -14,8 +14,21 @@ extern "C" {
 
 #include "communication.h"
 #include "BytesReadBuffer.h"
+#include "BytesWriteBuffer.h"
 #include "coinlang_up.h"
 #include "coinlang_down.h"
+
+
+BytesWriteBuffer msgBuffer[NUM_MESSAGES];
+
+msg_t free_messages_queue[NUM_MESSAGES];
+MAILBOX_DECL(mb_free_msgs, free_messages_queue, NUM_MESSAGES);
+
+msg_t filled_messages_queue[NUM_MESSAGES];
+MAILBOX_DECL(mb_filled_msgs, free_messages_queue, NUM_MESSAGES);
+
+
+
 
 BytesReadBuffer read_buffer;
 DownMessage msg;
@@ -118,6 +131,11 @@ int check_messages(DownMessage& msg) {
 
 
 
+/// TODO
+/// Right now, this thread wait 1ms at each loop. It better should be woken up on 3 conditions:
+/// - there is something in the UART buffer (UART interruption or something like this)
+/// - some other thread posted a message in the "filled" mailbox
+
 static THD_WORKING_AREA(waCommunication, 600);
 static void el_communicator (void *arg)
 {
@@ -154,6 +172,30 @@ static void el_communicator (void *arg)
     // }
 
 
+    BytesWriteBuffer *buffer;
+    // send throught UART all messages ready to be sent.
+    // get a filled buffer. No timeout : if there is none, then there is no message to be sent
+    while(chMBFetchTimeout(&mb_filled_msgs, (msg_t *)&buffer, 0) == MSG_OK) {
+        uint32_t buf_size = buffer->get_size();
+        uint8_t* data = buffer->get_data();
+
+        uint8_t header[3] = {0xFF, 0xFF, 0};
+        header[2] =  static_cast<uint8_t>(buf_size);
+
+        uint8_t chk = 0;
+        for(size_t i=0; i<buf_size; i++) {
+            chk ^= data[i];
+        }
+
+        sdWrite(&SD5, header, 3);
+        sdWrite(&SD5, buffer->get_data(), (size_t)buf_size);
+        sdWrite(&SD5, &chk, 1);
+
+        buffer->clear();
+        // return buffer to the free buffers pool.
+        // can't fail right ? Just fetched a message, and filled and free have the same size
+        (void)chMBPostTimeout(&mb_free_msgs, (msg_t)buffer, 0);
+    }
     
     int ret = check_messages(msg);
     if(ret == COM_OK) {
@@ -181,5 +223,10 @@ static void el_communicator (void *arg)
 }
 
 void start_communication() {
+  // Pre-filling the free buffers pool with the available buffers, the post
+  // will not stop because the mailbox is large enough.
+  for (int i = 0; i < NUM_MESSAGES; i++) {
+    (void)chMBPostTimeout(&mb_free_msgs, (msg_t)&msgBuffer[i], 0);
+  }
   chThdCreateStatic(waCommunication, sizeof(waCommunication), NORMALPRIO, &el_communicator, NULL);
 }

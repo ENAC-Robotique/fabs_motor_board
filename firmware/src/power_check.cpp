@@ -11,6 +11,14 @@ extern "C" {
 #endif
 //#include "printf.h"
 
+#include "BytesWriteBuffer.h"
+#include "communication.h"
+#include "coinlang_up.h"
+
+#define PERIOD_BATTERY_REPORT 2000
+
+static msg_t sendBatteryReport(float voltage);
+
 ADCConversionGroup adc1cfg = {
   .circular = false,
   .num_channels = 1,
@@ -37,6 +45,8 @@ static void power_check (void *arg) {
 
   adcsample_t sample;
 
+  static systime_t lastBatteryReportTime = 0;
+
   while (true) {
     msg_t status = adcConvert(&ADCD1, &adc1cfg, &sample, 1);
     if(status == MSG_OK) {
@@ -55,9 +65,32 @@ static void power_check (void *arg) {
       }
 
       //chprintf ((BaseSequentialStream*)&SDU1, "%f\r\n", power_voltage);
+      if(chVTTimeElapsedSinceX(lastBatteryReportTime) > TIME_MS2I(PERIOD_BATTERY_REPORT)) {
+        if(sendBatteryReport(power_voltage) == MSG_OK) {
+            lastBatteryReportTime = chVTGetSystemTime();
+        }
+    }
     }
     chThdSleepMilliseconds(1000);  //increase to 2000 or more
   }
+}
+
+msg_t sendBatteryReport(float voltage) {
+        BytesWriteBuffer* buffer;
+        // get a free buffer. timeout of 5ms
+        msg_t ret = chMBFetchTimeout(&mb_free_msgs, (msg_t *)&buffer, TIME_MS2I(5));
+        if(ret == MSG_OK) {
+            // OK
+            UpMessage msg;
+            BatteryReport battery_report;
+            battery_report.set_voltage(voltage);
+            msg.set_battery_report(battery_report);
+            msg.serialize(*buffer);
+
+            // post the new message for the communication thread. timeout of 10 ms
+            (void)chMBPostTimeout(&mb_filled_msgs, (msg_t)buffer, TIME_MS2I(10));
+        }
+        return ret;
 }
 
 void start_power_check() {

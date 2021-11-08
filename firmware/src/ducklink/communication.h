@@ -6,6 +6,10 @@
 extern "C" {
 #endif
 
+#define NUM_MESSAGES 10
+extern mailbox_t mb_free_msgs;
+extern mailbox_t mb_filled_msgs;
+
 enum RcvState {
     _RCV_START1ST,
     _RCV_START2ND,
