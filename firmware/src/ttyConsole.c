@@ -33,6 +33,7 @@ static void cmd_encoders(BaseSequentialStream *lchp, int argc,const char* const 
 static void cmd_motors(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 static void cmd_pos(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 static void cmd_speed(BaseSequentialStream *lchp, int argc,const char* const argv[]);
+static void cmd_help(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 
 static const ShellCommand commands[] = {
   {"mem", cmd_mem},		// affiche la mémoire libre/occupée
@@ -45,6 +46,7 @@ static const ShellCommand commands[] = {
   {"mot", cmd_motors},	// donne une consigne moteur
   {"pos", cmd_pos},	// affiche position
   {"speed", cmd_speed},	// donne une consigne de vitesse
+  {"help", cmd_help},
   {NULL, NULL}			// marqueur de fin de tableau
 };
 
@@ -137,6 +139,13 @@ static void cmd_pos(BaseSequentialStream *lchp, int argc,const char* const argv[
   if (argc == 0) {   
     chprintf (lchp, "%f\t%f\t%f\r\n", get_x(), get_y(), get_theta());
   }
+}
+
+static void cmd_help(BaseSequentialStream *lchp, int argc,const char* const argv[])
+{
+  (void)argc;
+  (void)argv;
+  chprintf (lchp, "TODO! But here are some commands: enc, mot, pos, speed,\r\nmem, threads, rtc, uid\r\n");
 }
 
 /*

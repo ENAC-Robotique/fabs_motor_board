@@ -165,14 +165,14 @@ CSRC = $(STARTUPSRC) \
        $(VARIOUS)/microrl/microrl.c \
        $(VARIOUS)/rtcAccess.c \
        $(VARIOUS)/usb_serial.c \
-       ttyConsole.c \
-       globalVar.c \
-       motors.c \
-       encoders.c \
-       speed_control.c \
-       odometry.c \
-       utils.c \
-       main.c
+       src/ttyConsole.c \
+       src/globalVar.c \
+       src/motors.c \
+       src/encoders.c \
+       src/speed_control.c \
+       src/odometry.c \
+       src/utils.c \
+       src/main.c
 
 # files extracted from ARM CMSIS DSP
 DSPBASE = cmsis_arm
@@ -180,9 +180,9 @@ include $(DSPBASE)/files.mk
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CPPSRC =  ducklink/communication.cpp \
-          ducklink/BytesReadBuffer.cpp \
-          ducklink/BytesWriteBuffer.cpp
+CPPSRC =  src/ducklink/communication.cpp \
+          src/ducklink/BytesReadBuffer.cpp \
+          src/ducklink/BytesWriteBuffer.cpp
 
 CPPSRC += $(EMBEDDED_PROTO_SRC)
 
@@ -267,8 +267,7 @@ UDEFS = -DTRACE
 UADEFS =
 
 # List all user directories here
-UINCDIR = ducklink \
-	  communication \
+UINCDIR = src/ src/ducklink \
 	  $(EMBEDDED_PROTO_DIR)/src \
     $(BUILDDIR)/generated \
     cmsis_arm
