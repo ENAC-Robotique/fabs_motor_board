@@ -21,7 +21,7 @@ ioline_t leds[] = {
 
 
 static const SerialConfig serialConfig =  {
-  57600,//115200,
+  115200,
   0,
   USART_CR2_STOP1_BITS | USART_CR2_LINEN,
   0
@@ -68,7 +68,7 @@ int main (void)
   chThdCreateStatic(waBlinker, sizeof(waBlinker), NORMALPRIO, &blinker, NULL); // lancement du thread 
   chThdCreateStatic(waPowerCheck, sizeof(waPowerCheck), NORMALPRIO, &power_check, NULL); // lancement du thread 
   start_motor_control_pid();
-  start_odom_report();
+  start_communication();
 
   consoleInit();	// initialisation des objets liés au shell
   

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+// Uplink messages
+
+message OdomReport {
+    float pos_x = 1;
+    float pos_y = 2;
+    float pos_theta = 3;
+}
+
+
+message UpMessage {
+    oneof inner{
+        OdomReport odom_report = 1;
+    
+    }
+}
+
+
+
+

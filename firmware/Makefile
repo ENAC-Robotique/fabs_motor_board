@@ -6,7 +6,7 @@
 # Compiler options here.
 # -Wdouble-promotion -fno-omit-frame-pointer
 GCCVERSIONGTEQ7 := $(shell expr `arm-none-eabi-gcc -dumpversion | cut -f1 -d.` \>= 7)
-GCC_DIAG =  -Werror -Wno-error=unused-variable -Wno-error=format \
+GCC_DIAG =  -Wno-error=unused-variable -Wno-error=format \
             -Wno-error=unused-function \
             -Wunused -Wpointer-arith \
             -Werror=sign-compare \
@@ -35,12 +35,12 @@ endif
 
 # C specific options here (added to USE_OPT).
 ifeq ($(USE_COPT),)
-  USE_COPT = -std=gnu11   
+  USE_COPT = -std=gnu11
 endif
 
 # C++ specific options here (added to USE_OPT).
 ifeq ($(USE_CPPOPT),)
-  USE_CPPOPT = -std=gnu++1y -fno-rtti -fno-exceptions 
+  USE_CPPOPT = -std=c++17 -fno-rtti -fno-exceptions -lstdc++
 endif
 
 
@@ -58,6 +58,26 @@ endif
 ifeq ($(USE_VERBOSE_COMPILE),)
   USE_VERBOSE_COMPILE = no
 endif
+
+
+
+
+
+
+
+# protobuf
+PROTOC = protoc
+PROTO_DIR = proto
+PROTO_GEN_DIR = build/generated
+EMBEDDED_PROTO_DIR = $(shell pwd)/EmbeddedProto
+
+PROTO_FILES = $(wildcard $(PROTO_DIR)/*.proto)
+PROTO_HDR := $(PROTO_FILES:%.proto=$(PROTO_GEN_DIR)/%.h) 
+EMBEDDED_PROTO_SRC := $(wildcard ./EmbeddedProto/src/*.cpp)
+
+EMBEDDED_PROTO_OBJS := $(EMBEDDED_PROTO_SRC:%.cpp=$(OBJECT_DIR)/%.o)
+
+
 
 #
 # Build global options
@@ -152,8 +172,6 @@ CSRC = $(STARTUPSRC) \
        speed_control.c \
        odometry.c \
        utils.c \
-       ducklink/messages.c \
-       ducklink/communication.c \
        main.c
 
 # files extracted from ARM CMSIS DSP
@@ -162,7 +180,11 @@ include $(DSPBASE)/files.mk
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CPPSRC =
+CPPSRC =  ducklink/communication.cpp \
+          ducklink/BytesReadBuffer.cpp \
+          ducklink/BytesWriteBuffer.cpp
+
+CPPSRC += $(EMBEDDED_PROTO_SRC)
 
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
@@ -208,8 +230,8 @@ CPPC = $(TRGT)g++
 # Enable loading with g++ only if you need C++ runtime support.
 # NOTE: You can use C++ even without C++ support if you are careful. C++
 #       runtime support makes code size explode.
-LD   = $(TRGT)gcc
-#LD   = $(TRGT)g++
+#LD   = $(TRGT)gcc
+LD   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 AR   = $(TRGT)ar
@@ -246,7 +268,10 @@ UADEFS =
 
 # List all user directories here
 UINCDIR = ducklink \
-          cmsis_arm
+	  communication \
+	  $(EMBEDDED_PROTO_DIR)/src \
+    $(BUILDDIR)/generated \
+    cmsis_arm
 
 # List the user directory to look for the libraries here
 ULIBDIR =
@@ -276,3 +301,13 @@ flash: all
 	@echo write $(BUILDDIR)/$(PROJECT).bin to flash memory
 	$(BMPFLASH)  $(BUILDDIR)/$(PROJECT).elf
 	@echo Done
+
+
+generate: $(PROTO_HDR)
+	$(info Done generating source files based on *.proto files.)
+
+$(PROTO_GEN_DIR)/%.h: %.proto
+	$(shell mkdir -p $(dir $@))
+	cd $(EMBEDDED_PROTO_DIR) && $(PROTOC) --plugin=protoc-gen-eams=protoc-gen-eams -I../$(PROTO_DIR) --eams_out=../$(PROTO_GEN_DIR) ../$<
+
+
