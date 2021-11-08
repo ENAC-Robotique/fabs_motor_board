@@ -171,8 +171,7 @@ CSRC = $(STARTUPSRC) \
        src/encoders.c \
        src/speed_control.c \
        src/odometry.c \
-       src/utils.c \
-       src/main.c
+       src/utils.c
 
 # files extracted from ARM CMSIS DSP
 DSPBASE = cmsis_arm
@@ -182,7 +181,9 @@ include $(DSPBASE)/files.mk
 # setting.
 CPPSRC =  src/ducklink/communication.cpp \
           src/ducklink/BytesReadBuffer.cpp \
-          src/ducklink/BytesWriteBuffer.cpp
+          src/ducklink/BytesWriteBuffer.cpp \
+          src/power_check.cpp \
+          src/main.cpp
 
 CPPSRC += $(EMBEDDED_PROTO_SRC)
 
