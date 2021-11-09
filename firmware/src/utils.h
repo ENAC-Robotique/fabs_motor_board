@@ -19,7 +19,7 @@ arm_matrix_instance_f32 name = {\
 /**
  * Centers an angle in radians to [-pi, pi[
  */
-float center_radians(float angle);
+double center_radians(double angle);
 
 #endif  // UTILS_H
 

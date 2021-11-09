@@ -7,7 +7,7 @@
 /**
  * Centers an angle in radians to [-pi, pi[
  */
-float center_radians(float angle){
+double center_radians(double angle){
   while (angle >= M_PI){
     angle -= 2 * M_PI;
   }

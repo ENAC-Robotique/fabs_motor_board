@@ -21,7 +21,7 @@ DifferentialControl speed_ctrl;
 #endif
 
 
-static THD_WORKING_AREA(waSpeedControl, 304);	// declaration de la pile du thread blinker
+static THD_WORKING_AREA(waSpeedControl, 500);	// declaration de la pile du thread blinker
 
 static void spctrl(void* arg) {
   chRegSetThreadName("Speed Control");

@@ -3,7 +3,7 @@ extern "C" {
 #endif
     #include <ch.h>
     #include <hal.h>
-    #include "odometry.h"
+    
     #include "printf.h"
     #include "globalVar.h"
     #include "speed_control.h"
@@ -12,6 +12,7 @@ extern "C" {
 }
 #endif
 
+#include "odometry.h"
 #include "communication.h"
 #include "BytesReadBuffer.h"
 #include "BytesWriteBuffer.h"
@@ -211,7 +212,7 @@ static void el_communicator (void *arg)
             auto ki = msg.pid_gains().ki();
             auto kd = msg.pid_gains().kd();
             // acquire lock ?!
-            //set_pid_gains(kp, ki, kd);
+            set_pid_gains(kp, ki, kd);
         }
 
     }

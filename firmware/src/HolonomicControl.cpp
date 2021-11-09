@@ -6,7 +6,7 @@ extern "C" {
   
   #include <ch.h>
   #include <hal.h>
-  #include "odometry.h"  
+   
   #include "stdutil.h"
   #include "printf.h"
   #include "globalVar.h"
@@ -15,6 +15,7 @@ extern "C" {
 }
 #endif
 
+#include "odometry.h" 
 #include "motors.h"
 #include "BytesWriteBuffer.h"
 #include "coinlang_up.h"
@@ -114,7 +115,8 @@ void HolonomicControl::speed_control(void *arg)
     float32_t elapsed_odometry = ((float)(now - lastTime_odometry)) / CH_CFG_ST_FREQUENCY;
 
     if(elapsed_odometry > ODOMETRY_PERIOD) {
-      update_odometry(elapsed_odometry);
+      odometry.update_odometry(elapsed_odometry);
+      //update_odometry(elapsed_odometry);
       lastTime_odometry = now;
     }
 
@@ -125,7 +127,10 @@ void HolonomicControl::speed_control(void *arg)
       MAKE_VECTOR3(m_cmd_p);
       MAKE_VECTOR3(m_cmd_i);
       
-      get_motor_speeds(&motor_speeds); // get current motors speeds
+
+      //auto speeds = odometry.get_motor_speeds();
+      
+      //get_motor_speeds(&motor_speeds); // get current motors speeds
 
       chMtxLock(&(mut_speed_set_point));
       arm_mat_mult_f32(&D, &_speed_setPoint, &m_setPoints);       // compute desired motors speed

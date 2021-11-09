@@ -66,7 +66,7 @@ int main (void)
   sdStart(&SD5, &serialConfig);
 
   initPwms();
-  initEnc1(true);
+  initEnc1(false);
   initEnc2(true);
   initEnc3(true);
   //initEnc4(false);

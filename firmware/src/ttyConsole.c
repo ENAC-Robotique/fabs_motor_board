@@ -20,7 +20,7 @@
 #include "encoders.h"
 #include "speed_control.h"
 #include "motors.h"
-#include "odometry.h"
+//#include "odometry.h"
 
 // declaration des prototypes de fonction
 // ces declarations sont necessaires pour remplir le tableau commands[] ci-dessous
@@ -114,7 +114,7 @@ static void cmd_speed(BaseSequentialStream *lchp, int argc,const char* const arg
   } else { // sinon (un ou plusieurs pararamètres passés à la commande param 
       float vx = atof (argv[0]);
       float vy = atof (argv[1]);
-      float vtheta = atof (argv[1]);
+      float vtheta = atof (argv[2]);
       
       set_speed_setPoint(vx, vy, vtheta);
   }
@@ -138,9 +138,9 @@ static void cmd_pos(BaseSequentialStream *lchp, int argc,const char* const argv[
 {
   (void)argc;
   (void)argv;
-  if (argc == 0) {   
-    chprintf (lchp, "%f\t%f\t%f\r\n", get_x(), get_y(), get_theta());
-  }
+  // if (argc == 0) {   
+  //   chprintf (lchp, "%f\t%f\t%f\r\n", get_x(), get_y(), get_theta());
+  // }
 }
 
 static void cmd_pid(BaseSequentialStream *lchp, int argc,const char* const argv[])

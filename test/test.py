@@ -56,8 +56,10 @@ class Com:
                     u.ParseFromString(payload)
                     if u.HasField("battery_report"):
                         print(f"battery_report: {u.battery_report.voltage}")
-                    elif u.HasField("odom_report"):
-                        print("odom report!")
+                    elif u.HasField("pos_report"):
+                        print(f"pos report: {u.pos_report.pos_x:.2f} {u.pos_report.pos_y:.2f} {u.pos_report.pos_theta:.2f}")
+                    elif u.HasField("speed_report"):
+                        print(f"speed report: {u.speed_report.vx:.2f} {u.speed_report.vy:.2f} {u.speed_report.vtheta:.2f}")
                     elif u.HasField("motor_report"):
                         print(f"motor report: {u.motor_report.m1} {u.motor_report.m2} {u.motor_report.m3}")
                 else:

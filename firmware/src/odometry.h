@@ -1,52 +1,69 @@
-#ifndef ODOMETRY_H
-#define ODOMETRY_H
+#pragma once
 
-#include "arm_math.h"
+#include "ch.h"
 
-//#define DIFF_DRIVE
-//#define CODING_WHEELS
-#define HOLONOMIC
+#define PERIOD_ODOM_REPORT 0.1
 
-
-#define INC_PER_MM 19.733327579357486
-
-#if defined(DIFF_DRIVE) && !defined(CODING_WHEELS) && !defined(HOLONOMIC)
-
-    #define WHEELBASE 154.84329099722402
-
-#elif defined(DIFF_DRIVE) && defined(CODING_WHEELS) && !defined(HOLONOMIC)
-
-    #define WHEELBASE 154.84329099722402
-    #define CODING_WHEELBASE 180.0
-
-#elif !defined(DIFF_DRIVE) && !defined(CODING_WHEELS) && defined(HOLONOMIC)
-
-    #define ROBOT_RADIUS    125.0
-
-#else
-#error "pleaase define DIFF_DRIVE/CODING_WHEELS/HOLONOMIC according to your configuration!"
-#endif
+#define INC_PER_MM 16.2
+//#define ROBOT_RADIUS    125.0
+#define WHEELBASE 180
+#define CODING_WHEELBASE 245
 
 
-#if defined(HOLONOMIC)
-float32_t RW_to_W(float32_t rw);
-float32_t W_to_RW(float32_t w);
-#endif
+double RW_to_W(double rw);
+double W_to_RW(double w);
+
+
+class OdometryDiff {
+public:
+
+    OdometryDiff(): speed(0), omega(0), _x(0), _y(0), _theta(0) {}
+    
+    void update_odometry(double elapsed);
+    
+    double get_speed(void) { return speed;}
+    double get_omega(void) {return omega;}
+
+    double get_x(void) {return _x;}
+    double get_y(void) {return _y;}
+    double get_theta(void) {return _theta;}
+
+    
+
+private:
+
+    msg_t sendOdomReport();
+
+    double speed;
+    double omega;
+
+    double _x;
+    double _y;
+    double _theta;
+
+
+    // double mot_speed;
+    // double mot_omega;
+
+};
 
 
 
-void update_odometry(float32_t elapsed);
+class OdometryHolonomic {
+public:
+    double get_speed(void);
+    double get_omega(void);
 
-float get_speed(void);
-float get_omega(void);
-float get_x(void);
-float get_y(void);
-float get_theta(void);
+    double get_x(void);
+    double get_y(void);
+    double get_theta(void);
 
-float get_vx(void);
-float get_vy(void);
-float get_vtheta(void);
+    double get_vx(void);
+    double get_vy(void);
+    double get_vtheta(void);
 
-void get_motor_speeds(arm_matrix_instance_f32* speed);
+    void update_odometry(double elapsed);
 
-#endif /* ODOMETRY_H */
+};
+
+extern OdometryDiff odometry;

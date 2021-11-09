@@ -69,7 +69,7 @@ static void power_check (void *arg) {
         if(sendBatteryReport(power_voltage) == MSG_OK) {
             lastBatteryReportTime = chVTGetSystemTime();
         }
-    }
+      }
     }
     chThdSleepMilliseconds(1000);  //increase to 2000 or more
   }
