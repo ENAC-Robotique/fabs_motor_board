@@ -183,6 +183,7 @@ CPPSRC =  src/ducklink/communication.cpp \
           src/power_check.cpp \
           src/motors.cpp \
           src/speed_control.cpp \
+          src/HolonomicControl.cpp \
           src/main.cpp
 
 CPPSRC += $(EMBEDDED_PROTO_SRC)
