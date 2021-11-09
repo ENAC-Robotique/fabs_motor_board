@@ -1,19 +1,19 @@
 
+#include <ch.h>
+#include <hal.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-  #include <ch.h>
-  #include <hal.h>
   #include "stdutil.h"		// necessaire pour initHeap
   #include "ttyConsole.h"		// fichier d'entête du shell
   #include "encoders.h"
-  
-  #include "communication.h"
   #include "utils.h"
 #ifdef __cplusplus
 }
 #endif
 
+#include "communication.h"
 #include "motors.h"
 #include "speed_control.h"
 #include "power_check.h"

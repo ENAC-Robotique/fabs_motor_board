@@ -4,6 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/src/**",
+                "${workspaceFolder}/EmbeddedProto/**",
+                "${workspaceFolder}/build/generated/**",
                 "${workspaceFolder}/chibios_svn_mirror/os/**"
             ],
             "defines": [],

@@ -39,8 +39,8 @@ class Com:
             if state == 0:
                 if self.serial.read()[0] == 0xFF:
                     state = 1
-                else:
-                    print(b)
+                #else:
+                #    print("plop")
             if state == 1:
                 if self.serial.read()[0] == 0xFF:
                     state = 2
@@ -51,20 +51,22 @@ class Com:
                 payload = self.serial.read(payload_len)
                 chk = self.serial.read()[0]
                 if chk == self.compute_chk(payload):
-                    print("success")
+                    #print("success")
                     u = clu.UpMessage()
                     u.ParseFromString(payload)
                     if u.HasField("battery_report"):
                         print(f"battery_report: {u.battery_report.voltage}")
                     elif u.HasField("odom_report"):
                         print("odom report!")
+                    elif u.HasField("motor_report"):
+                        print(f"motor report: {u.motor_report.m1} {u.motor_report.m2} {u.motor_report.m3}")
                 else:
                     print(f"chk failed: {chk} vs {self.compute_chk(payload)}")
                 state = 0
 
 
 if __name__ == "__main__":
-    com = Com("/dev/ttyUSB0")
+    com = Com("/dev/bmp_tty")
     
     com.send_speed_cmd(10, 12, 16)
     com.rcv() 

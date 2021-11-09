@@ -33,6 +33,7 @@ static void cmd_encoders(BaseSequentialStream *lchp, int argc,const char* const 
 static void cmd_motors(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 static void cmd_pos(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 static void cmd_speed(BaseSequentialStream *lchp, int argc,const char* const argv[]);
+static void cmd_pid(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 static void cmd_help(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 
 static const ShellCommand commands[] = {
@@ -46,6 +47,7 @@ static const ShellCommand commands[] = {
   {"mot", cmd_motors},	// donne une consigne moteur
   {"pos", cmd_pos},	// affiche position
   {"speed", cmd_speed},	// donne une consigne de vitesse
+  {"pid", cmd_pid},	// set PID gains
   {"help", cmd_help},
   {NULL, NULL}			// marqueur de fin de tableau
 };
@@ -86,7 +88,7 @@ static void cmd_motors(BaseSequentialStream *lchp, int argc,const char* const ar
       int motor_no = atoi (argv[0]);
       float speed = atof (argv[1]);
       
-      if(motor_no >= 1 && motor_no <= 3 && speed >= -1.0 && speed <= 1.0) {
+      if(motor_no >= 1 && motor_no <= 3 && speed >= -100.0 && speed <= 100.0) {
         switch(motor_no) {
           case 1:
             setmot1(speed);
@@ -100,7 +102,7 @@ static void cmd_motors(BaseSequentialStream *lchp, int argc,const char* const ar
         }
       } else {
         chprintf (lchp, "motor_no must be between 1 and 3, and speed between 0 and 1\r\n");
-        chprintf (lchp, "s >= -1.0 : %d \t s <= 1.0 : %d \r\n", speed >= -1.0, speed <= 1.0);
+        chprintf (lchp, "s >= -100.0 : %d \t s <= 10.0 : %d \r\n", speed >= -1.0, speed <= 1.0);
       }
   }
 }
@@ -141,11 +143,24 @@ static void cmd_pos(BaseSequentialStream *lchp, int argc,const char* const argv[
   }
 }
 
+static void cmd_pid(BaseSequentialStream *lchp, int argc,const char* const argv[])
+{
+  if (argc < 3) {  // si aucun paramètre n'a été passé à la commande param 
+    chprintf (lchp, "Usage: pid <kp> <ki> <kd>\r\n");
+  } else { // sinon (un ou plusieurs pararamètres passés à la commande param 
+      float kp = atof (argv[0]);
+      float ki = atof (argv[1]);
+      float kd = atof (argv[1]);
+      
+      set_pid_gains(kp, ki, kd);
+  }
+}
+
 static void cmd_help(BaseSequentialStream *lchp, int argc,const char* const argv[])
 {
   (void)argc;
   (void)argv;
-  chprintf (lchp, "TODO! But here are some commands: enc, mot, pos, speed,\r\nmem, threads, rtc, uid\r\n");
+  chprintf (lchp, "TODO! But here are some commands: enc, mot, pos, speed, pid\r\nmem, threads, rtc, uid\r\n");
 }
 
 /*

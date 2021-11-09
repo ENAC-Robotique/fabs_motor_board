@@ -82,9 +82,8 @@ msg_t sendBatteryReport(float voltage) {
         if(ret == MSG_OK) {
             // OK
             UpMessage msg;
-            BatteryReport battery_report;
+            auto& battery_report = msg.mutable_battery_report();
             battery_report.set_voltage(voltage);
-            msg.set_battery_report(battery_report);
             msg.serialize(*buffer);
 
             // post the new message for the communication thread. timeout of 10 ms

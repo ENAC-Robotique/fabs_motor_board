@@ -8,6 +8,12 @@ message OdomReport {
     float pos_theta = 3;
 }
 
+message MotorReport {
+    float m1 = 1;
+    float m2 = 2;
+    float m3 = 3;
+}
+
 message BatteryReport {
     float voltage = 1;
 }
@@ -16,6 +22,7 @@ message UpMessage {
     oneof inner{
         OdomReport odom_report = 1;
         BatteryReport battery_report = 2;
+        MotorReport motor_report = 3;
     }
 }
 
