@@ -167,9 +167,7 @@ CSRC = $(STARTUPSRC) \
        $(VARIOUS)/usb_serial.c \
        src/ttyConsole.c \
        src/globalVar.c \
-       src/motors.c \
        src/encoders.c \
-       src/speed_control.c \
        src/odometry.c \
        src/utils.c
 
@@ -183,6 +181,8 @@ CPPSRC =  src/ducklink/communication.cpp \
           src/ducklink/BytesReadBuffer.cpp \
           src/ducklink/BytesWriteBuffer.cpp \
           src/power_check.cpp \
+          src/motors.cpp \
+          src/speed_control.cpp \
           src/main.cpp
 
 CPPSRC += $(EMBEDDED_PROTO_SRC)

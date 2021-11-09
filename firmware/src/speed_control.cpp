@@ -1,14 +1,23 @@
 
 #include "speed_control.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+  
+  #include <ch.h>
+  #include <hal.h>
+  #include "odometry.h"  
+  #include "stdutil.h"
+  #include "printf.h"
+  #include "globalVar.h"
+  #include "utils.h"
+#ifdef __cplusplus
+}
+#endif
+
 #include <math.h>
-#include <ch.h>
-#include <hal.h>
-#include "odometry.h"
 #include "motors.h"
-#include "stdutil.h"
-#include "printf.h"
-#include "globalVar.h"
-#include "utils.h"
 
 float32_t mins_cmd[] = {-1., -1., -1.};
 float32_t maxs_cmd[] = {1.,  1.,  1.};
@@ -18,6 +27,10 @@ float32_t _kp, _ki, _kd = 0;
 // speed set point, it the robot reference frame : {vx(mm/s), vy(mm/s), R*vtheta(mm*rad/s)}
 MAKE_VECTOR3(_speed_setPoint)
 MUTEX_DECL(mut_speed_set_point);
+
+
+static void clamping(arm_matrix_instance_f32* cmd, arm_matrix_instance_f32* error, float32_t *mins, float32_t *maxs, bool* clamps);
+
 
 /**
  * Set speed setPoint
@@ -161,7 +174,7 @@ void start_motor_control_pid() {
   chThdCreateStatic(waSpeedControl, sizeof(waSpeedControl), NORMALPRIO, &speed_control, NULL);
 }
 
-void clamping(arm_matrix_instance_f32* cmd, arm_matrix_instance_f32* error, float32_t *mins, float32_t *maxs, bool* clamps){
+static void clamping(arm_matrix_instance_f32* cmd, arm_matrix_instance_f32* error, float32_t *mins, float32_t *maxs, bool* clamps){
   for(int i=0;i<3;i++) {
     bool saturation, sign_eq = false;
     if(cmd->pData[i] <= mins[i] || cmd->pData[i] >= maxs[i]) { // saturate

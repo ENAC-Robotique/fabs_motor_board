@@ -9,6 +9,10 @@
 #define SPEED_CONTROL_PERIOD 0.050
 #define ODOMETRY_PERIOD 0.025
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void start_motor_control_pid(void);
 void set_speed_setPoint(float32_t vx, float32_t vy, float32_t vtheta);
 
@@ -22,5 +26,8 @@ void set_speed_setPoint_norm_dir(float32_t speed, float32_t direction, float32_t
 
 void set_pid_gains(float32_t kp, float32_t ki, float32_t kd);
 
-void clamping(arm_matrix_instance_f32* cmd, arm_matrix_instance_f32* error, float32_t *mins, float32_t *maxs, bool* clamps);
+#ifdef __cplusplus
+}
+#endif
+
 #endif // __MOTOR_CONTROL_H__

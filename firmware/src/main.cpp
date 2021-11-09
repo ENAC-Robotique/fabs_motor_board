@@ -7,13 +7,15 @@ extern "C" {
   #include "stdutil.h"		// necessaire pour initHeap
   #include "ttyConsole.h"		// fichier d'entête du shell
   #include "encoders.h"
-  #include "motors.h"
+  
   #include "communication.h"
-  #include "speed_control.h"
   #include "utils.h"
 #ifdef __cplusplus
 }
 #endif
+
+#include "motors.h"
+#include "speed_control.h"
 #include "power_check.h"
 
 ioline_t leds[] = {

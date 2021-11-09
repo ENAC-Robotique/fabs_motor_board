@@ -89,13 +89,13 @@ static void cmd_motors(BaseSequentialStream *lchp, int argc,const char* const ar
       if(motor_no >= 1 && motor_no <= 3 && speed >= -1.0 && speed <= 1.0) {
         switch(motor_no) {
           case 1:
-            setMot1(speed);
+            setmot1(speed);
             break;
           case 2:
-            setMot2(speed);
+            setmot2(speed);
             break;
           case 3:
-            setMot3(speed);
+            setmot3(speed);
             break;
         }
       } else {
