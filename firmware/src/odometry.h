@@ -2,11 +2,11 @@
 
 #include "ch.h"
 
-#define PERIOD_ODOM_REPORT 0.1
+#define PERIOD_ODOM_REPORT 0.5
 
-#define INC_PER_MM 16.2
+#define INC_PER_MM 17.31
 //#define ROBOT_RADIUS    125.0
-#define WHEELBASE 180
+#define WHEELBASE 175.5
 #define CODING_WHEELBASE 245
 
 
