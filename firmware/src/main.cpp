@@ -68,8 +68,8 @@ int main (void)
   initPwms();
   initEnc1(false);
   initEnc2(true);
-  initEnc3(true);
-  //initEnc4(false);
+  initEnc3(false);
+  initEnc4(true);
   setMot1(0);
   setMot2(0);
   setMot3(0);

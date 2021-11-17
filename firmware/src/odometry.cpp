@@ -17,16 +17,19 @@ OdometryDiff odometry;
 
 void OdometryDiff::update_odometry(double elapsed) {
     static systime_t lastOdomReportTime = 0;
-    //int32_t delta_mot_left = get_delta_enc1();
-    //int32_t delta_mot_right = get_delta_enc2();
-    int32_t delta_left = get_delta_enc1();
-    int32_t delta_right = get_delta_enc2();
+    int32_t delta_mot_left = get_delta_enc1();
+    int32_t delta_mot_right = get_delta_enc2();
+    int32_t delta_left = get_delta_enc3();
+    int32_t delta_right = get_delta_enc4();
 
-    double length = ((double)(delta_left + delta_right)/2.0)/INC_PER_MM;
-    double angle = ((double)(delta_right - delta_left)/INC_PER_MM)/WHEELBASE;
+    double mot_length = ((double)(delta_mot_left + delta_mot_right)/2.0)/MOTOR_INC_PER_MM;
+    double mot_angle = ((double)(delta_mot_right - delta_mot_left)/MOTOR_INC_PER_MM)/WHEELBASE;
 
-    speed = length / elapsed;
-    omega = angle / elapsed;
+    double length = ((double)(delta_left + delta_right)/2.0)/CODING_INC_PER_MM;
+    double angle = ((double)(delta_right - delta_left)/CODING_INC_PER_MM)/CODING_WHEELBASE;
+
+    speed = mot_length / elapsed;
+    omega = mot_angle / elapsed;
     _x = _x + length*cos(_theta + angle/2.0);
     _y = _y + length*sin(_theta + angle/2.0);
     _theta = center_radians(_theta + angle);
