@@ -31,7 +31,7 @@ ioline_t leds[] = {
 
 
 static const SerialConfig serialConfig =  {
-  115200,
+  57600,
   0,
   USART_CR2_STOP1_BITS | USART_CR2_LINEN,
   0

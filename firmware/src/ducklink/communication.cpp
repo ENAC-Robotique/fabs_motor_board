@@ -38,7 +38,8 @@ DownMessage msg;
  *  Received message from serial. Non-blocking function.
  *  Returns COM_OK if a message is available.
  */
-int check_messages(DownMessage& msg) {
+int check_messages(DownMessage& dmsg) {
+    dmsg.clear();
     static enum RcvState _rcv_state = _RCV_START1ST;
     static uint8_t _nb_bytes_expected;
     static uint8_t msg_chk;
@@ -111,14 +112,13 @@ int check_messages(DownMessage& msg) {
             _rcv_state = _RCV_START1ST;
             // TODO control checksum
             if(chk == msg_chk) {
-                auto err = msg.deserialize(read_buffer);
+                auto err = dmsg.deserialize(read_buffer);
                 if(err == EmbeddedProto::Error::NO_ERRORS) {
                     return COM_OK;    
                 }
                 else {
                     chprintf ((BaseSequentialStream*)&SDU1, "Deserialization error!\r\n\r\n");
-                    //return COM_ERROR;
-                    return COM_OK;
+                    return COM_ERROR;
                 }
             } else {
                 chprintf ((BaseSequentialStream*)&SDU1, "chk failed!\r\n\r\n");
@@ -206,7 +206,7 @@ static void el_communicator (void *arg)
             auto vtheta = msg.speed_command().vtheta();
             chprintf ((BaseSequentialStream*)&SDU1, "Speed cmd: %f, %f, %f\r\n\r\n", vx, vy, vtheta);
             // acquire lock ?!
-            //set_speed_setPoint(vx, vy, vtheta);
+            set_speed_setPoint(vx, vy, vtheta);
         } else if(msg.has_pid_gains()) {
             auto kp = msg.pid_gains().kp();
             auto ki = msg.pid_gains().ki();
@@ -214,7 +214,7 @@ static void el_communicator (void *arg)
             // acquire lock ?!
             set_pid_gains(kp, ki, kd);
         }
-
+        
     }
     
       palToggleLine(LINE_LED_UART);
