@@ -15,7 +15,7 @@ extern "C" {
 #include "communication.h"
 #include "coinlang_up.h"
 
-#define PERIOD_BATTERY_REPORT 2000
+#define PERIOD_BATTERY_REPORT 1000
 
 static msg_t sendBatteryReport(float voltage);
 
@@ -35,7 +35,7 @@ ADCConversionGroup adc1cfg = {
 };
 
 
-static THD_WORKING_AREA(waPowerCheck, 304);
+static THD_WORKING_AREA(waPowerCheck, 1000);
 static void power_check (void *arg) {
   (void)arg;
   chRegSetThreadName("power_check");

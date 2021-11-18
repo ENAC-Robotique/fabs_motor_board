@@ -137,7 +137,7 @@ int check_messages(DownMessage& dmsg) {
 /// - there is something in the UART buffer (UART interruption or something like this)
 /// - some other thread posted a message in the "filled" mailbox
 
-static THD_WORKING_AREA(waCommunication, 600);
+static THD_WORKING_AREA(waCommunication, 1000);
 static void el_communicator (void *arg)
 {
   (void)arg;
