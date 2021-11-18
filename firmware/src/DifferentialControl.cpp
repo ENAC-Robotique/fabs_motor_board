@@ -10,7 +10,7 @@ extern "C" {
 }
 
 
-
+#define MAX_SPEED_INT_ERROR 100
 
 double clamp(double lo, double val, double hi) {
     if(val < lo) {return lo;}
@@ -63,11 +63,14 @@ void DifferentialControl::speed_control(void *arg) {
 
     if(elapsed > SPEED_CONTROL_PERIOD) {
       double error_speed = speed_setPoint - odometry.get_speed();
-      _intError_speed += error_speed;
+
+      _intError_speed += error_speed / elapsed;
+      _intError_speed = clamp(-MAX_SPEED_INT_ERROR, _intError_speed, MAX_SPEED_INT_ERROR)
+
       double delta_speed_error = error_speed - _prevError_speed;
       _prevError_speed = error_speed;
 
-      double cmd_speed = NOMINAL_PGAIN * speed_setPoint + KP_SPEED * error_speed + KI_SPEED * _intError_speed - KD_SPEED * delta_speed_error;
+      double cmd_speed = NOMINAL_PGAIN * speed_setPoint + KP_SPEED * error_speed + KI_SPEED * _intError_speed + KD_SPEED * delta_speed_error;
 
 
       double error_omega = omega_setPoint - odometry.get_omega();
@@ -88,6 +91,7 @@ void DifferentialControl::speed_control(void *arg) {
       setMot1(cmd_mot1);
       setMot2(cmd_mot2);
 
+      lastTime = chVTGetSystemTime();
     }
 
   }
