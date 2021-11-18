@@ -15,6 +15,12 @@ extern "C" {
 }
 
 
+#define SETPOINT_VALIDITY 1
+#define MOTOR_CONTROL_PERIOD 0.1
+#define ODOMETRY_PERIOD 0.1
+
+
+
 void DifferentialControl::set_speed_setPoint(double vx, double vy, double vtheta) {
     speed_setPoint = vx;
     omega_setPoint = vtheta;
@@ -24,6 +30,8 @@ void DifferentialControl::set_speed_setPoint(double vx, double vy, double vtheta
 
     l_pid.set_setpoint(spl);
     r_pid.set_setpoint(spr);
+
+    setpoint_time = chVTGetSystemTime();
 }
 
 // TODO omega ?
@@ -33,16 +41,12 @@ void DifferentialControl::set_pid_gains(double ng, double kp, double ki, double 
     r_pid.set_gains(ng, kp, ki, kd);
 }
 
-
-#define MOTOR_CONTROL_PERIOD 0.1
-#define ODOMETRY_PERIOD 0.1
-
-
 void DifferentialControl::speed_control(void *arg) {
   (void)arg;
 
   systime_t lastTime_odometry = chVTGetSystemTime();
   systime_t lastTime_motors = chVTGetSystemTime();
+  setpoint_time = chVTGetSystemTime();
 
   l_pid.init(20);
   r_pid.init(20);
@@ -54,6 +58,13 @@ void DifferentialControl::speed_control(void *arg) {
     systime_t now = chVTGetSystemTime();
     double elapsed_odometry = ((double)(now - lastTime_odometry)) / CH_CFG_ST_FREQUENCY;
     double elapsed_motors = ((double)(now - lastTime_motors)) / CH_CFG_ST_FREQUENCY;
+    double elapsed_setpoint = ((double)(now - setpoint_time)) / CH_CFG_ST_FREQUENCY;
+
+
+    // set speed setpoint to 0 is no speed command has been received since a while.
+    if(elapsed_setpoint > SETPOINT_VALIDITY) {
+      set_speed_setPoint(0, 0, 0);
+    }
 
     if(elapsed_odometry > ODOMETRY_PERIOD) {
       odometry.update_pos(elapsed_odometry);

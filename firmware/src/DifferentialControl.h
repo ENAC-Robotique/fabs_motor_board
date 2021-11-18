@@ -21,6 +21,8 @@ private:
     double speed_setPoint;
     double omega_setPoint;
 
+    systime_t setpoint_time;
+
     PID l_pid;
     PID r_pid;
 
