@@ -208,11 +208,12 @@ static void el_communicator (void *arg)
             // acquire lock ?!
             set_speed_setPoint(vx, vy, vtheta);
         } else if(msg.has_pid_gains()) {
+            auto ng = msg.pid_gains().ng();
             auto kp = msg.pid_gains().kp();
             auto ki = msg.pid_gains().ki();
             auto kd = msg.pid_gains().kd();
             // acquire lock ?!
-            set_pid_gains(kp, ki, kd);
+            set_pid_gains(ng, kp, ki, kd);
         }
         
     }

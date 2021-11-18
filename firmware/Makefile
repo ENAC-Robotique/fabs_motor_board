@@ -166,9 +166,7 @@ CSRC = $(STARTUPSRC) \
        $(VARIOUS)/rtcAccess.c \
        $(VARIOUS)/usb_serial.c \
        src/ttyConsole.c \
-       src/globalVar.c \
-       src/encoders.c \
-       src/utils.c
+       src/globalVar.c
 
 # files extracted from ARM CMSIS DSP
 DSPBASE = cmsis_arm
@@ -185,6 +183,8 @@ CPPSRC =  src/ducklink/communication.cpp \
           src/speed_control.cpp \
           src/HolonomicControl.cpp \
           src/DifferentialControl.cpp \
+          src/encoders.cpp \
+          src/utils.cpp \
           src/main.cpp
 
 CPPSRC += $(EMBEDDED_PROTO_SRC)

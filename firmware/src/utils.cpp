@@ -1,8 +1,4 @@
 #include "utils.h"
-#include "ch.h"
-#include "hal.h"
-#include "globalVar.h"
-#include "printf.h"
 
 /**
  * Centers an angle in radians to [-pi, pi[
@@ -16,3 +12,11 @@ double center_radians(double angle){
   }
   return angle;
 }
+
+
+double clamp(double lo, double val, double hi) {
+    if(val < lo) {return lo;}
+    if(val > hi) {return hi;}
+    return val;
+}
+

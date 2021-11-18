@@ -7,12 +7,13 @@ extern "C" {
 #endif
   #include "stdutil.h"		// necessaire pour initHeap
   #include "ttyConsole.h"		// fichier d'entête du shell
-  #include "encoders.h"
+  
   #include "utils.h"
 #ifdef __cplusplus
 }
 #endif
 
+#include "encoders.h"
 #include "communication.h"
 #include "motors.h"
 #include "speed_control.h"

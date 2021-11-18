@@ -35,20 +35,10 @@ void start_motor_control_pid() {
 
 
 
-void set_speed_setPoint(float32_t vx, float32_t vy, float32_t vtheta) {
+void set_speed_setPoint(double vx, double vy, double vtheta) {
   speed_ctrl.set_speed_setPoint(vx, vy, vtheta);
 }
 
-/**
- * Set speed setPoint from norm and direction.
- * speed: robot speed in mm/s
- * direction: speed direction in radians, [0, 2*pi]
- * omega: rotation speed in rad/s
- */
-void set_speed_setPoint_norm_dir(float32_t speed, float32_t direction, float32_t omega) {
-  speed_ctrl.set_speed_setPoint_norm_dir(speed, direction, omega);
-}
-
-void set_pid_gains(float32_t kp, float32_t ki, float32_t kd) {
-  speed_ctrl.set_pid_gains(kp, ki, kd);
+void set_pid_gains(double ng, double kp, double ki, double kd) {
+  speed_ctrl.set_pid_gains(ng, kp, ki, kd);
 }

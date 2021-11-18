@@ -17,7 +17,7 @@
 /* START OF EDITABLE SECTION                                           */
 /*===========================================================================*/
 
-#include "encoders.h"
+//#include "encoders.h"
 #include "speed_control.h"
 #include "motors.h"
 //#include "odometry.h"
@@ -124,12 +124,13 @@ static void cmd_encoders(BaseSequentialStream *lchp, int argc,const char* const 
 {
   (void)argc;
   (void)argv;
-  int32_t enc1 = get_delta_enc1();
-  int32_t enc2 = get_delta_enc2();
-  int32_t enc3 = get_delta_enc3();
-  int32_t enc4 = get_delta_enc4();
+  // int32_t enc1 = get_delta_enc1();
+  // int32_t enc2 = get_delta_enc2();
+  // int32_t enc3 = get_delta_enc3();
+  // int32_t enc4 = get_delta_enc4();
   if (argc == 0) {   
-    chprintf (lchp, "%ld\t%ld\t%ld\t%ld\r\n", enc1, enc2, enc3, enc4);
+    //chprintf (lchp, "%ld\t%ld\t%ld\t%ld\r\n", enc1, enc2, enc3, enc4);
+    chprintf (lchp, "out of order\r\n");
   }
 }
 
@@ -146,13 +147,14 @@ static void cmd_pos(BaseSequentialStream *lchp, int argc,const char* const argv[
 static void cmd_pid(BaseSequentialStream *lchp, int argc,const char* const argv[])
 {
   if (argc < 3) {  // si aucun paramètre n'a été passé à la commande param 
-    chprintf (lchp, "Usage: pid <kp> <ki> <kd>\r\n");
+    chprintf (lchp, "Usage: pid <ng> <kp> <ki> <kd>\r\n");
   } else { // sinon (un ou plusieurs pararamètres passés à la commande param 
-      float kp = atof (argv[0]);
-      float ki = atof (argv[1]);
-      float kd = atof (argv[1]);
+      float ng = atof (argv[0]);
+      float kp = atof (argv[1]);
+      float ki = atof (argv[2]);
+      float kd = atof (argv[3]);
       
-      set_pid_gains(kp, ki, kd);
+      set_pid_gains(ng, kp, ki, kd);
   }
 }
 

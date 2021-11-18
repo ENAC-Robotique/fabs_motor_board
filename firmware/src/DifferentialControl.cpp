@@ -1,99 +1,121 @@
 #include "DifferentialControl.h"
 #include "odometry.h"
 #include "motors.h"
-
+#include "encoders.h"
 #include "hal.h"
+#include "communication.h"
+#include "BytesWriteBuffer.h"
+#include "coinlang_up.h"
+
 extern "C" {
-    #include "printf.h"
-    #include "globalVar.h"
-    #include "stdutil.h"
-}
-
-
-#define MAX_SPEED_INT_ERROR 100
-
-double clamp(double lo, double val, double hi) {
-    if(val < lo) {return lo;}
-    if(val > hi) {return hi;}
-    return val;
+  #include "printf.h"
+  #include "globalVar.h"
+  #include "stdutil.h"
+    
 }
 
 
 void DifferentialControl::set_speed_setPoint(double vx, double vy, double vtheta) {
     speed_setPoint = vx;
     omega_setPoint = vtheta;
+
+    double spl = speed_setPoint - WHEELBASE*omega_setPoint/2;
+    double spr = speed_setPoint + WHEELBASE*omega_setPoint/2;
+
+    l_pid.set_setpoint(spl);
+    r_pid.set_setpoint(spr);
 }
-
-
-void DifferentialControl::set_speed_setPoint_norm_dir(double speed, double direction, double omega) {
-    speed_setPoint = speed;
-    omega_setPoint = omega;
-}
-
 
 // TODO omega ?
 // message en parametre ?
-void DifferentialControl::set_pid_gains(double kp, double ki, double kd) {
-    KP_SPEED = kp;
-    KI_SPEED = ki;
-    KD_SPEED = kd;
+void DifferentialControl::set_pid_gains(double ng, double kp, double ki, double kd) {
+    l_pid.set_gains(ng, kp, ki, kd);
+    r_pid.set_gains(ng, kp, ki, kd);
 }
 
 
-#define SPEED_CONTROL_PERIOD 0.1
+#define MOTOR_CONTROL_PERIOD 0.1
 #define ODOMETRY_PERIOD 0.1
-//#define ODOMETRY_PERIOD 0.025
+
 
 void DifferentialControl::speed_control(void *arg) {
   (void)arg;
 
   systime_t lastTime_odometry = chVTGetSystemTime();
-  systime_t lastTime = chVTGetSystemTime();
+  systime_t lastTime_motors = chVTGetSystemTime();
+
+  l_pid.init(20);
+  r_pid.init(20);
+
+  set_pid_gains(1.5, 0, 0.4, 0);
 
   while(true) {
 
     systime_t now = chVTGetSystemTime();
-    double elapsed = ((double)(now - lastTime)) / CH_CFG_ST_FREQUENCY;
     double elapsed_odometry = ((double)(now - lastTime_odometry)) / CH_CFG_ST_FREQUENCY;
+    double elapsed_motors = ((double)(now - lastTime_motors)) / CH_CFG_ST_FREQUENCY;
 
     if(elapsed_odometry > ODOMETRY_PERIOD) {
-      odometry.update_odometry(elapsed_odometry);
+      odometry.update_pos(elapsed_odometry);
       lastTime_odometry = now;
     }
 
-    if(elapsed > SPEED_CONTROL_PERIOD) {
-      double error_speed = speed_setPoint - odometry.get_speed();
+    if(elapsed_motors > MOTOR_CONTROL_PERIOD) {
+      
 
-      _intError_speed += error_speed / elapsed;
-      _intError_speed = clamp(-MAX_SPEED_INT_ERROR, _intError_speed, MAX_SPEED_INT_ERROR)
+      odometry.update_mot(elapsed_motors);
 
-      double delta_speed_error = error_speed - _prevError_speed;
-      _prevError_speed = error_speed;
+      double speed_left = odometry.get_speed_left();
+      double speed_right = odometry.get_speed_right();
+      double cmd_left =  l_pid.update(speed_left);
+      double cmd_right = r_pid.update(speed_right);
+      setMot1(cmd_left);
+      setMot2(-cmd_right);
 
-      double cmd_speed = NOMINAL_PGAIN * speed_setPoint + KP_SPEED * error_speed + KI_SPEED * _intError_speed + KD_SPEED * delta_speed_error;
+      sendMotorsSpeed(speed_left, speed_right, 0);
+      sendMotorsCmd(l_pid.get_setpoint(), r_pid.get_setpoint(), 0);
 
-
-      double error_omega = omega_setPoint - odometry.get_omega();
-      _intError_omega += error_omega;
-
-      _intError_omega = clamp(-50, _intError_omega + error_omega, 50);
-      double delta_omega_error = error_omega - _prevError_omega;
-      _prevError_omega = error_omega;
-
-      double cmd_omega = WHEELBASE * NOMINAL_PGAIN * omega_setPoint + KP_OMEGA * error_omega + KI_OMEGA * _intError_omega + KD_OMEGA * delta_omega_error;
-
-
-      double cmd_mot1 = clamp(-100, cmd_speed - cmd_omega, 100);
-      double cmd_mot2 = -clamp(-100, cmd_speed + cmd_omega, 100);
-
-      //chprintf ((BaseSequentialStream*)&SDU1, "CMD% f %f\r\n", cmd_mot1, cmd_mot2);
-
-      setMot1(cmd_mot1);
-      setMot2(cmd_mot2);
-
-      lastTime = chVTGetSystemTime();
+      lastTime_motors = now;
     }
+  }
+}
 
+msg_t DifferentialControl::sendMotorsSpeed(double v1, double v2, double v3) {
+  BytesWriteBuffer* buffer_pos;
+  // get a free buffer. no timeout.
+  msg_t ret = chMBFetchTimeout(&mb_free_msgs, (msg_t *)&buffer_pos, TIME_IMMEDIATE);
+  if(ret != MSG_OK) {
+    return ret;
   }
 
+  UpMessage msg;
+  auto& motors_speed = msg.mutable_motor_speed_report();
+  motors_speed.set_v1(v1);
+  motors_speed.set_v2(v2);
+  motors_speed.set_v3(v3);
+  msg.serialize(*buffer_pos);
+  // post the new message for the communication thread. no timeout.
+  (void)chMBPostTimeout(&mb_filled_msgs, (msg_t)buffer_pos, TIME_IMMEDIATE);
+
+  return ret;
+}
+
+msg_t DifferentialControl::sendMotorsCmd(double cmd1, double cmd2, double cmd3) {
+  BytesWriteBuffer* buffer_pos;
+  // get a free buffer. no timeout.
+  msg_t ret = chMBFetchTimeout(&mb_free_msgs, (msg_t *)&buffer_pos, TIME_IMMEDIATE);
+  if(ret != MSG_OK) {
+    return ret;
+  }
+
+  UpMessage msg;
+  auto& motors_cmd= msg.mutable_motor_cmd_report();
+  motors_cmd.set_cmd1(cmd1);
+  motors_cmd.set_cmd2(cmd2);
+  motors_cmd.set_cmd3(cmd3);
+  msg.serialize(*buffer_pos);
+  // post the new message for the communication thread. no timeout.
+  (void)chMBPostTimeout(&mb_filled_msgs, (msg_t)buffer_pos, TIME_IMMEDIATE);
+
+  return ret;
 }

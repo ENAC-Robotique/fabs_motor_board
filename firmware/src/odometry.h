@@ -18,9 +18,13 @@ double W_to_RW(double w);
 class OdometryDiff {
 public:
 
-    OdometryDiff(): speed(0), omega(0), _x(0), _y(0), _theta(0) {}
+    OdometryDiff(): speed(0), omega(0), speed_left(0), speed_right(0), _x(0), _y(0), _theta(0) {}
     
-    void update_odometry(double elapsed);
+    void update_pos(double elapsed);
+    void update_mot(double elapsed);
+
+    double get_speed_left(void) {return speed_left;}
+    double get_speed_right(void) {return speed_right;}
     
     double get_speed(void) { return speed;}
     double get_omega(void) {return omega;}
@@ -38,14 +42,12 @@ private:
     double speed;
     double omega;
 
+    double speed_left;
+    double speed_right;
+
     double _x;
     double _y;
     double _theta;
-
-
-    // double mot_speed;
-    // double mot_omega;
-
 };
 
 

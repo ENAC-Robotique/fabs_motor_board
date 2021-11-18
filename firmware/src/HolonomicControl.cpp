@@ -28,10 +28,10 @@ msg_t sendMotorReport(float m1, float m2, float m3) {
         if(ret == MSG_OK) {
             // OK
             UpMessage msg;
-            auto& motor_report = msg.mutable_motor_report();
-            motor_report.set_m1(m1);
-            motor_report.set_m2(m2);
-            motor_report.set_m3(m3);
+            auto& motor_report = msg.mutable_motor_speed_report();
+            motor_report.set_v1(m1);
+            motor_report.set_v2(m2);
+            motor_report.set_v3(m3);
             msg.serialize(*buffer);
 
             // post the new message for the communication thread. timeout of 10 ms
@@ -106,75 +106,75 @@ void HolonomicControl::speed_control(void *arg)
 {
   (void)arg;
 
-  systime_t lastTime_odometry = chVTGetSystemTime();
-  systime_t lastTime = chVTGetSystemTime();
+  // systime_t lastTime_odometry = chVTGetSystemTime();
+  // systime_t lastTime = chVTGetSystemTime();
 
   while (true) {
-    systime_t now = chVTGetSystemTime();
-    float32_t elapsed = ((float)(now - lastTime)) / CH_CFG_ST_FREQUENCY;
-    float32_t elapsed_odometry = ((float)(now - lastTime_odometry)) / CH_CFG_ST_FREQUENCY;
+    // systime_t now = chVTGetSystemTime();
+    // float32_t elapsed = ((float)(now - lastTime)) / CH_CFG_ST_FREQUENCY;
+    // float32_t elapsed_odometry = ((float)(now - lastTime_odometry)) / CH_CFG_ST_FREQUENCY;
 
-    if(elapsed_odometry > ODOMETRY_PERIOD) {
-      odometry.update_odometry(elapsed_odometry);
-      //update_odometry(elapsed_odometry);
-      lastTime_odometry = now;
-    }
+    // if(elapsed_odometry > ODOMETRY_PERIOD) {
+    //   odometry.update_odometry(elapsed_odometry);
+    //   //update_odometry(elapsed_odometry);
+    //   lastTime_odometry = now;
+    // }
 
-    if(elapsed > SPEED_CONTROL_PERIOD) {
-      MAKE_VECTOR3(m_setPoints);
-      MAKE_VECTOR3(motor_speeds);
-      MAKE_VECTOR3(m_errors);
-      MAKE_VECTOR3(m_cmd_p);
-      MAKE_VECTOR3(m_cmd_i);
+    // if(elapsed > SPEED_CONTROL_PERIOD) {
+    //   MAKE_VECTOR3(m_setPoints);
+    //   MAKE_VECTOR3(motor_speeds);
+    //   MAKE_VECTOR3(m_errors);
+    //   MAKE_VECTOR3(m_cmd_p);
+    //   MAKE_VECTOR3(m_cmd_i);
       
 
-      //auto speeds = odometry.get_motor_speeds();
+    //   //auto speeds = odometry.get_motor_speeds();
       
-      //get_motor_speeds(&motor_speeds); // get current motors speeds
+    //   //get_motor_speeds(&motor_speeds); // get current motors speeds
 
-      chMtxLock(&(mut_speed_set_point));
-      arm_mat_mult_f32(&D, &_speed_setPoint, &m_setPoints);       // compute desired motors speed
-      chMtxUnlock(&(mut_speed_set_point));
+    //   chMtxLock(&(mut_speed_set_point));
+    //   arm_mat_mult_f32(&D, &_speed_setPoint, &m_setPoints);       // compute desired motors speed
+    //   chMtxUnlock(&(mut_speed_set_point));
 
-      arm_mat_sub_f32(&m_setPoints, &motor_speeds, &m_errors);     // compute error
+    //   arm_mat_sub_f32(&m_setPoints, &motor_speeds, &m_errors);     // compute error
 
-      // chMtxLock(&(mut_speed_set_point));
-      // chprintf ((BaseSequentialStream*)&SDU1, "sSp: %.2f %.2f %.2f  \r\n", 
-      //           _speed_setPoint.pData[0], _speed_setPoint.pData[1], _speed_setPoint.pData[2]);
-      // chMtxUnlock(&(mut_speed_set_point));
-      // chprintf ((BaseSequentialStream*)&SDU1, "mSp: %.2f %.2f %.2f  \r\n", 
-      //           m_setPoints.pData[0], m_setPoints.pData[1], m_setPoints.pData[2]);
-      // chprintf ((BaseSequentialStream*)&SDU1, "merr: %.2f %.2f %.2f  \r\ncmd: %.2f %.2f %.2f\r\n\r\n",
-      //           m_errors.pData[0], m_errors.pData[1], m_errors.pData[2],
-      //           m_cmd.pData[0], m_cmd.pData[1], m_cmd.pData[2]);
+    //   // chMtxLock(&(mut_speed_set_point));
+    //   // chprintf ((BaseSequentialStream*)&SDU1, "sSp: %.2f %.2f %.2f  \r\n", 
+    //   //           _speed_setPoint.pData[0], _speed_setPoint.pData[1], _speed_setPoint.pData[2]);
+    //   // chMtxUnlock(&(mut_speed_set_point));
+    //   // chprintf ((BaseSequentialStream*)&SDU1, "mSp: %.2f %.2f %.2f  \r\n", 
+    //   //           m_setPoints.pData[0], m_setPoints.pData[1], m_setPoints.pData[2]);
+    //   // chprintf ((BaseSequentialStream*)&SDU1, "merr: %.2f %.2f %.2f  \r\ncmd: %.2f %.2f %.2f\r\n\r\n",
+    //   //           m_errors.pData[0], m_errors.pData[1], m_errors.pData[2],
+    //   //           m_cmd.pData[0], m_cmd.pData[1], m_cmd.pData[2]);
 
-      bool clamps[3];
-      clamping(&m_cmd, &m_errors, mins_cmd, maxs_cmd, clamps); // should be integrate ?
-      for(int i=0; i<3; i++) {                                    //integrate if allowed
-        if(!clamps[i]) {
-          m_Ierr.pData[i] += m_errors.pData[i];
-        }
-      }
+    //   bool clamps[3];
+    //   clamping(&m_cmd, &m_errors, mins_cmd, maxs_cmd, clamps); // should be integrate ?
+    //   for(int i=0; i<3; i++) {                                    //integrate if allowed
+    //     if(!clamps[i]) {
+    //       m_Ierr.pData[i] += m_errors.pData[i];
+    //     }
+    //   }
 
 
       
 
-      arm_mat_scale_f32(&m_errors, _kp, &m_cmd_p);                 // P command
-      arm_mat_scale_f32(&m_Ierr,   _ki, &m_cmd_i);                 // I command
+    //   arm_mat_scale_f32(&m_errors, _kp, &m_cmd_p);                 // P command
+    //   arm_mat_scale_f32(&m_Ierr,   _ki, &m_cmd_i);                 // I command
       
-      arm_mat_add_f32(&m_cmd_p, &m_cmd_i, &m_cmd);
+    //   arm_mat_add_f32(&m_cmd_p, &m_cmd_i, &m_cmd);
 
 
 
-      //if(status == ARM_MATH_SUCCESS) {
-      setMot1(m_cmd.pData[0]);
-      setMot2(m_cmd.pData[1]);
-      setMot3(m_cmd.pData[2]);
+    //   //if(status == ARM_MATH_SUCCESS) {
+    //   setMot1(m_cmd.pData[0]);
+    //   setMot2(m_cmd.pData[1]);
+    //   setMot3(m_cmd.pData[2]);
 
-      sendMotorReport(m_cmd.pData[0], m_cmd.pData[1], m_cmd.pData[2]);
+    //   sendMotorReport(m_cmd.pData[0], m_cmd.pData[1], m_cmd.pData[2]);
 
-      lastTime = now;
-    }
+    //   lastTime = now;
+    // }
 
 
     chThdSleepMilliseconds(1);

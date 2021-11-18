@@ -27,7 +27,6 @@ int32_t get_delta_enc1() {
     }
   }
   TIM_ENC1->SR = 0;
-
   return delta_pos;
 }
 
@@ -61,8 +60,6 @@ int32_t get_delta_enc3() {
   last_pos_enc = pos_enc;
 
   // This counter is 32 bits, so no need for the overflow mecanism, its auto-math-ic! :-)
-
-  
   return delta_pos;
 }
 
@@ -73,16 +70,17 @@ int32_t get_delta_enc4() {
   int32_t delta_pos = pos_enc - last_pos_enc;
   last_pos_enc = pos_enc;
 
-  if(TIM_ENC4->SR & TIM_SR_UIF    //an overflow appenned 
-     && ABS(delta_pos) > 32000 ) {  //ensure that it has not been back (ex: CNT at 12, goes to 665500 by underflow, then back to 14 by overflow)
-    if(pos_enc < 2000) {  // counter range from 0 to 65535. if couter is < 2000, we most probably did an overflow
-      delta_pos += 65535;
-    } else {  // we most probably did an underflow
-      delta_pos -= 65535;
+
+  if(TIM_ENC4->SR & TIM_SR_UIF){    //an overflow appenned 
+    if(ABS(delta_pos) > 32000 ) {  //ensure that it has not been back (ex: CNT at 12, goes to 665500 by underflow, then back to 14 by overflow)
+      if(pos_enc < 31000) {  // counter range from 0 to 65535. if couter is < 2000, we most probably did an overflow
+        delta_pos += 65535;
+      } else {  // we most probably did an underflow
+        delta_pos -= 65535;
+      }
     }
   }
   TIM_ENC4->SR = 0;
-
   return delta_pos;
 }
 

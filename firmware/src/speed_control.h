@@ -7,9 +7,8 @@ extern "C" {
 #endif
 
 void start_motor_control_pid(void);
-void set_speed_setPoint(float32_t vx, float32_t vy, float32_t vtheta);
-void set_speed_setPoint_norm_dir(float32_t speed, float32_t direction, float32_t omega);
-void set_pid_gains(float32_t kp, float32_t ki, float32_t kd);
+void set_speed_setPoint(double vx, double vy, double vtheta);
+void set_pid_gains(double ng, double kp, double ki, double kd);
 
 #ifdef __cplusplus
 }
