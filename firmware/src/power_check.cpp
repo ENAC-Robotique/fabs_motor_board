@@ -65,7 +65,7 @@ static void power_check (void *arg) {
       }
 
       //chprintf ((BaseSequentialStream*)&SDU1, "%f\r\n", power_voltage);
-      if(chVTTimeElapsedSinceX(lastBatteryReportTime) > TIME_MS2I(PERIOD_BATTERY_REPORT)) {
+      if(chVTTimeElapsedSinceX(lastBatteryReportTime) > chTimeMS2I(PERIOD_BATTERY_REPORT)) {
         if(sendBatteryReport(power_voltage) == MSG_OK) {
             lastBatteryReportTime = chVTGetSystemTime();
         }

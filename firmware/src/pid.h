@@ -22,9 +22,8 @@ public:
      *  return: new command
      */
     double update(double value) {
-        systime_t now = chVTGetSystemTime();
-        double elapsed = ((double)(now - lastTime) / CH_CFG_ST_FREQUENCY);
-        lastTime = now;
+        double elapsed = chTimeMS2I(chVTTimeElapsedSinceX(lastTime))/1000.0;
+        lastTime = chVTGetSystemTime();
 
         double error = setpoint - value;
         error_acc += error/elapsed;

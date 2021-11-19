@@ -15,7 +15,7 @@ extern "C" {
 }
 
 
-#define SETPOINT_VALIDITY 1
+#define SETPOINT_VALIDITY 1000  //ms
 #define MOTOR_CONTROL_PERIOD 0.1
 #define ODOMETRY_PERIOD 0.1
 
@@ -25,8 +25,10 @@ void DifferentialControl::set_speed_setPoint(double vx, double vy, double vtheta
     speed_setPoint = vx;
     omega_setPoint = vtheta;
 
+
     double spl = speed_setPoint - WHEELBASE*omega_setPoint/2;
     double spr = speed_setPoint + WHEELBASE*omega_setPoint/2;
+
 
     l_pid.set_setpoint(spl);
     r_pid.set_setpoint(spr);
@@ -48,21 +50,19 @@ void DifferentialControl::speed_control(void *arg) {
   systime_t lastTime_motors = chVTGetSystemTime();
   setpoint_time = chVTGetSystemTime();
 
-  l_pid.init(20);
-  r_pid.init(20);
+  l_pid.init(10000);
+  r_pid.init(10000);
 
-  set_pid_gains(1.5, 0, 0.4, 0);
+  set_pid_gains(0.14, 0, 0.001, 0);
 
   while(true) {
 
     systime_t now = chVTGetSystemTime();
-    double elapsed_odometry = ((double)(now - lastTime_odometry)) / CH_CFG_ST_FREQUENCY;
-    double elapsed_motors = ((double)(now - lastTime_motors)) / CH_CFG_ST_FREQUENCY;
-    double elapsed_setpoint = ((double)(now - setpoint_time)) / CH_CFG_ST_FREQUENCY;
-
-
+    double elapsed_odometry = chTimeMS2I(chVTTimeElapsedSinceX(lastTime_odometry))/1000.0;
+    double elapsed_motors = chTimeMS2I(chVTTimeElapsedSinceX(lastTime_motors))/1000.0;
+   
     // set speed setpoint to 0 is no speed command has been received since a while.
-    if(elapsed_setpoint > SETPOINT_VALIDITY) {
+    if(chVTTimeElapsedSinceX(setpoint_time) > chTimeMS2I(SETPOINT_VALIDITY)) {
       set_speed_setPoint(0, 0, 0);
     }
 
@@ -70,6 +70,7 @@ void DifferentialControl::speed_control(void *arg) {
       odometry.update_pos(elapsed_odometry);
       lastTime_odometry = now;
     }
+
 
     if(elapsed_motors > MOTOR_CONTROL_PERIOD) {
       
@@ -82,6 +83,8 @@ void DifferentialControl::speed_control(void *arg) {
       double cmd_right = r_pid.update(speed_right);
       setMot1(cmd_left);
       setMot2(-cmd_right);
+
+      //chprintf ((BaseSequentialStream*)&SDU1, "speeds = %f\t%f\r\n", speed_left, speed_right);
 
       sendMotorsSpeed(speed_left, speed_right, 0);
       sendMotorsCmd(l_pid.get_setpoint(), r_pid.get_setpoint(), 0);

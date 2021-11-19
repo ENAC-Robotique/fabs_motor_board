@@ -5,8 +5,7 @@
 extern "C" {
 #include "printf.h"
 #include "globalVar.h"
-
-
+#include "stdutil.h"
 }
 #include "utils.h"
 #include "communication.h"
@@ -40,8 +39,8 @@ void OdometryDiff::update_mot(double elapsed) {
   int32_t delta_mot_left = get_delta_enc1();
   int32_t delta_mot_right = get_delta_enc2();
 
-  speed_left  = delta_mot_left /MOTOR_INC_PER_MM;
-  speed_right = delta_mot_right/MOTOR_INC_PER_MM;
+  speed_left  = static_cast<double>(delta_mot_left) / (MOTOR_INC_PER_MM*elapsed);
+  speed_right = static_cast<double>(delta_mot_right)/ (MOTOR_INC_PER_MM*elapsed);
 }
 
 
