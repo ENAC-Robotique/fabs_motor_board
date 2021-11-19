@@ -51,7 +51,7 @@ int check_messages(DownMessage& dmsg) {
         size_t ret = sdReadTimeout(&SD5, &token, 1, TIME_IMMEDIATE);
         if(ret > 0 && token == 0XFF) {
             _rcv_state = _RCV_START2ND;
-            chprintf ((BaseSequentialStream*)&SDU1, "Got start1!\r\n");
+            //chprintf ((BaseSequentialStream*)&SDU1, "Got start1!\r\n");
         }
     }
 
@@ -62,9 +62,9 @@ int check_messages(DownMessage& dmsg) {
             if(token == 0xFF) {
             //_rcv_state = _RCV_ID;
                 _rcv_state = _RCV_LEN;
-                chprintf ((BaseSequentialStream*)&SDU1, "Got start2!\r\n");
+                //chprintf ((BaseSequentialStream*)&SDU1, "Got start2!\r\n");
             } else {
-                chprintf ((BaseSequentialStream*)&SDU1, "start2 failed! %d\r\n", token);
+                //chprintf ((BaseSequentialStream*)&SDU1, "start2 failed! %d\r\n", token);
                 _rcv_state = _RCV_START1ST;
             }
         }
@@ -81,7 +81,7 @@ int check_messages(DownMessage& dmsg) {
     if(_rcv_state == _RCV_LEN) {
         size_t ret = sdReadTimeout(&SD5, &_nb_bytes_expected, 1, TIME_IMMEDIATE);
         if(ret > 0) {
-            chprintf ((BaseSequentialStream*)&SDU1, "Got len: %d\r\n", _nb_bytes_expected);
+            //chprintf ((BaseSequentialStream*)&SDU1, "Got len: %d\r\n", _nb_bytes_expected);
             _rcv_state = _RCV_PAYLOAD;
         }
     }
@@ -204,7 +204,7 @@ static void el_communicator (void *arg)
             auto vx = msg.speed_command().vx();
             auto vy = msg.speed_command().vy();
             auto vtheta = msg.speed_command().vtheta();
-            chprintf ((BaseSequentialStream*)&SDU1, "Speed cmd: %f, %f, %f\r\n\r\n", vx, vy, vtheta);
+            //chprintf ((BaseSequentialStream*)&SDU1, "Speed cmd: %f, %f, %f\r\n\r\n", vx, vy, vtheta);
             // acquire lock ?!
             set_speed_setPoint(vx, vy, vtheta);
         } else if(msg.has_pid_gains()) {
