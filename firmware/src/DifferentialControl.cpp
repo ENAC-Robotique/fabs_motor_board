@@ -50,10 +50,10 @@ void DifferentialControl::speed_control(void *arg) {
   systime_t lastTime_motors = chVTGetSystemTime();
   setpoint_time = chVTGetSystemTime();
 
-  l_pid.init(10000);
-  r_pid.init(10000);
+  l_pid.init(30, 1000);
+  r_pid.init(30, 1000);
 
-  set_pid_gains(0.14, 0, 0.001, 0);
+  set_pid_gains(0.14, 0.2, 0.1, 0);
 
   while(true) {
 
@@ -87,7 +87,7 @@ void DifferentialControl::speed_control(void *arg) {
       //chprintf ((BaseSequentialStream*)&SDU1, "speeds = %f\t%f\r\n", speed_left, speed_right);
 
       sendMotorsSpeed(speed_left, speed_right, 0);
-      sendMotorsCmd(l_pid.get_setpoint(), r_pid.get_setpoint(), 0);
+      sendMotorsCmd(l_pid.get_setpoint(), l_pid.get_precommand(), 0);
 
       lastTime_motors = now;
     }

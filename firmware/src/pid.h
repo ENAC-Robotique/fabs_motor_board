@@ -6,15 +6,17 @@ class PID {
 
 public:
     
-    void init(double int_max) {
+    void init(double int_max_cmd, double accel_max) {
         lastTime = chVTGetSystemTime();
         setpoint = 0;
+        precommand = 0;
         error_acc = 0;
-        nominal_gain = 0;
+        feedforward_gain = 0;
         kp = 0;
         ki = 0;
         kd = 0;
-        max_acc = int_max;
+        max_int_cmd = int_max_cmd;
+        max_accel = accel_max;
     }
 
     /**
@@ -22,15 +24,21 @@ public:
      *  return: new command
      */
     double update(double value) {
+
+        
+
         double elapsed = chTimeMS2I(chVTTimeElapsedSinceX(lastTime))/1000.0;
         lastTime = chVTGetSystemTime();
 
-        double error = setpoint - value;
-        error_acc += error/elapsed;
-        error_acc = clamp(-max_acc, error_acc, max_acc);
+        precommand = clamp(precommand-max_accel*elapsed, setpoint, precommand+max_accel*elapsed);
+        double error = precommand - value;
+
+        error_acc += error*elapsed;
+        //saturate error such that the contribution of integrator to the cmd cannot exceed max_int_cmd.
+        error_acc = clamp(-max_int_cmd/ki, error_acc, max_int_cmd/ki);
 
         // TODO KD
-        double cmd = nominal_gain * setpoint + kp * error + ki * error_acc;
+        double cmd = feedforward_gain * precommand + kp * error + ki * error_acc;
         cmd = clamp(-100, cmd, 100);
 
         return cmd;
@@ -42,7 +50,7 @@ public:
     }
 
     void set_gains(double ng, double p, double i, double d) {
-        nominal_gain = ng;
+        feedforward_gain = ng;
         kp = p;
         ki = i;
         kd = d;
@@ -52,17 +60,23 @@ public:
         return setpoint;
     }
 
+    double get_precommand() {
+        return precommand;
+    }
+
 private:
     double setpoint;
+    double precommand;
 
     double error_acc;
 
     systime_t lastTime;
 
-    double nominal_gain;
+    double feedforward_gain;
     double kp;
     double ki;
     double kd;
-    double max_acc;
+    double max_int_cmd;
+    double max_accel;
 
 };
