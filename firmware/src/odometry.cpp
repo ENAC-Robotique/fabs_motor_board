@@ -10,7 +10,7 @@ extern "C" {
 #include "utils.h"
 #include "communication.h"
 #include "BytesWriteBuffer.h"
-#include "coinlang_up.h"
+#include "messages.h"
 
 OdometryDiff odometry;
 
@@ -45,37 +45,22 @@ void OdometryDiff::update_mot(double elapsed) {
 
 
 msg_t OdometryDiff::sendOdomReport() {
-  BytesWriteBuffer* buffer_pos;
-  // get a free buffer. no timeout.
-  msg_t ret = chMBFetchTimeout(&mb_free_msgs, (msg_t *)&buffer_pos, TIME_IMMEDIATE);
+  Message msg;
+  auto& pos_report = msg.mutable_pos();
+  pos_report.set_x(_x);
+  pos_report.set_y(_y);
+  pos_report.set_theta(_theta);
+  msg_t ret = post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
+
   if(ret != MSG_OK) {
     return ret;
   }
 
-  UpMessage msg;
-  auto& pos_report = msg.mutable_pos_report();
-  pos_report.set_pos_x(_x);
-  pos_report.set_pos_y(_y);
-  pos_report.set_pos_theta(_theta);
-  msg.serialize(*buffer_pos);
-  // post the new message for the communication thread. no timeout.
-  (void)chMBPostTimeout(&mb_filled_msgs, (msg_t)buffer_pos, TIME_IMMEDIATE);
 
-
-  BytesWriteBuffer* buffer_speed;
-  // get a free buffer. timeout of 5ms
-  ret = chMBFetchTimeout(&mb_free_msgs, (msg_t *)&buffer_speed, TIME_MS2I(5));
-  if(ret != MSG_OK) {
-    return ret;
-  }
-
-  auto& speed_report = msg.mutable_speed_report();
+  auto& speed_report = msg.mutable_speed();
   speed_report.set_vx(speed);
   speed_report.set_vy(0);
   speed_report.set_vtheta(omega);
-  msg.serialize(*buffer_speed);
-  // post the new message for the communication thread. timeout of 10 ms
-  (void)chMBPostTimeout(&mb_filled_msgs, (msg_t)buffer_speed, TIME_MS2I(10));
-
+  ret = post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
   return ret;
 }

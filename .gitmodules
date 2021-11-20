@@ -13,3 +13,6 @@
 [submodule "firmware/EmbeddedProto"]
 	path = firmware/EmbeddedProto
 	url = git@github.com:Embedded-AMS/EmbeddedProto.git
+[submodule "firmware/protoduck"]
+	path = firmware/protoduck
+	url = git@github.com:rustyducks/protoduck.git

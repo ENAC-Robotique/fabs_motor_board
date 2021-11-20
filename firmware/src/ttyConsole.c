@@ -147,14 +147,14 @@ static void cmd_pos(BaseSequentialStream *lchp, int argc,const char* const argv[
 static void cmd_pid(BaseSequentialStream *lchp, int argc,const char* const argv[])
 {
   if (argc < 3) {  // si aucun paramètre n'a été passé à la commande param 
-    chprintf (lchp, "Usage: pid <ng> <kp> <ki> <kd>\r\n");
+    chprintf (lchp, "Usage: pid <feedforward> <kp> <ki> <kd>\r\n");
   } else { // sinon (un ou plusieurs pararamètres passés à la commande param 
-      float ng = atof (argv[0]);
+      float feedforward = atof (argv[0]);
       float kp = atof (argv[1]);
       float ki = atof (argv[2]);
       float kd = atof (argv[3]);
       
-      set_pid_gains(ng, kp, ki, kd);
+      set_pid_gains(0, feedforward, kp, ki, kd);
   }
 }
 

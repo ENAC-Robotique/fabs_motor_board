@@ -1,6 +1,9 @@
 
 #pragma once
 
+#include "messages.h"
+#include "ch.h"
+
 #define M_PI 3.14159265358979323846
 
 #ifndef ABS
@@ -14,3 +17,5 @@
 double center_radians(double angle);
 
 double clamp(double lo, double val, double hi);
+
+msg_t post_message(Message& msg, Message::MsgType msg_type, sysinterval_t timeout);

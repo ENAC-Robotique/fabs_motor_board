@@ -18,26 +18,16 @@ extern "C" {
 #include "odometry.h" 
 #include "motors.h"
 #include "BytesWriteBuffer.h"
-#include "coinlang_up.h"
-#include "communication.h"
+#include "utils.h"
+#include "messages.h"
 
 msg_t sendMotorReport(float m1, float m2, float m3) {
-        BytesWriteBuffer* buffer;
-        // get a free buffer. timeout of 1ms
-        msg_t ret = chMBFetchTimeout(&mb_free_msgs, (msg_t *)&buffer, TIME_MS2I(1));
-        if(ret == MSG_OK) {
-            // OK
-            UpMessage msg;
-            auto& motor_report = msg.mutable_motor_speed_report();
-            motor_report.set_v1(m1);
-            motor_report.set_v2(m2);
-            motor_report.set_v3(m3);
-            msg.serialize(*buffer);
-
-            // post the new message for the communication thread. timeout of 10 ms
-            (void)chMBPostTimeout(&mb_filled_msgs, (msg_t)buffer, TIME_MS2I(10));
-        }
-        return ret;
+  Message msg;
+  auto& motors_speed = msg.mutable_motors_speed();
+  motors_speed.set_v1(m1);
+  motors_speed.set_v2(m2);
+  motors_speed.set_v3(m3);
+  return post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
 }
 
 

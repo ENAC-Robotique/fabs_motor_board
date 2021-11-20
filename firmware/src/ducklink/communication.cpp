@@ -16,8 +16,7 @@ extern "C" {
 #include "communication.h"
 #include "BytesReadBuffer.h"
 #include "BytesWriteBuffer.h"
-#include "coinlang_up.h"
-#include "coinlang_down.h"
+#include "messages.h"
 
 
 BytesWriteBuffer msgBuffer[NUM_MESSAGES];
@@ -32,13 +31,13 @@ MAILBOX_DECL(mb_filled_msgs, free_messages_queue, NUM_MESSAGES);
 
 
 BytesReadBuffer read_buffer;
-DownMessage msg;
+Message msg;
 
 /**
  *  Received message from serial. Non-blocking function.
  *  Returns COM_OK if a message is available.
  */
-int check_messages(DownMessage& dmsg) {
+int check_messages(Message& dmsg) {
     dmsg.clear();
     static enum RcvState _rcv_state = _RCV_START1ST;
     static uint8_t _nb_bytes_expected;
@@ -200,20 +199,21 @@ static void el_communicator (void *arg)
     
     int ret = check_messages(msg);
     if(ret == COM_OK) {
-        if (msg.has_speed_command()) {
-            auto vx = msg.speed_command().vx();
-            auto vy = msg.speed_command().vy();
-            auto vtheta = msg.speed_command().vtheta();
+        if (msg.has_speed() && msg.msg_type() == Message::MsgType::COMMAND) {
+            auto vx = msg.speed().vx();
+            auto vy = msg.speed().vy();
+            auto vtheta = msg.speed().vtheta();
             //chprintf ((BaseSequentialStream*)&SDU1, "Speed cmd: %f, %f, %f\r\n\r\n", vx, vy, vtheta);
             // acquire lock ?!
             set_speed_setPoint(vx, vy, vtheta);
-        } else if(msg.has_pid_gains()) {
-            auto ng = msg.pid_gains().ng();
-            auto kp = msg.pid_gains().kp();
-            auto ki = msg.pid_gains().ki();
-            auto kd = msg.pid_gains().kd();
+        } else if(msg.has_motor_pid() && msg.msg_type() == Message::MsgType::COMMAND) {
+            auto motor_no = msg.motor_pid().motor_no();
+            auto feedforward = msg.motor_pid().feedforward();
+            auto kp = msg.motor_pid().kp();
+            auto ki = msg.motor_pid().ki();
+            auto kd = msg.motor_pid().kd();
             // acquire lock ?!
-            set_pid_gains(ng, kp, ki, kd);
+            set_pid_gains(motor_no, feedforward, kp, ki, kd);
         }
         
     }
@@ -230,5 +230,7 @@ void start_communication() {
   for (int i = 0; i < NUM_MESSAGES; i++) {
     (void)chMBPostTimeout(&mb_free_msgs, (msg_t)&msgBuffer[i], 0);
   }
+
+
   chThdCreateStatic(waCommunication, sizeof(waCommunication), NORMALPRIO, &el_communicator, NULL);
 }

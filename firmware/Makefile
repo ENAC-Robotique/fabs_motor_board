@@ -67,7 +67,7 @@ endif
 
 # protobuf
 PROTOC = protoc
-PROTO_DIR = proto
+PROTO_DIR = protoduck
 PROTO_GEN_DIR = build/generated
 EMBEDDED_PROTO_DIR = $(shell pwd)/EmbeddedProto
 

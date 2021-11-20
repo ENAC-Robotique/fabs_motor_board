@@ -5,7 +5,8 @@
 #include "hal.h"
 #include "communication.h"
 #include "BytesWriteBuffer.h"
-#include "coinlang_up.h"
+#include "messages.h"
+#include "utils.h"
 
 extern "C" {
   #include "printf.h"
@@ -38,9 +39,15 @@ void DifferentialControl::set_speed_setPoint(double vx, double vy, double vtheta
 
 // TODO omega ?
 // message en parametre ?
-void DifferentialControl::set_pid_gains(double ng, double kp, double ki, double kd) {
-    l_pid.set_gains(ng, kp, ki, kd);
-    r_pid.set_gains(ng, kp, ki, kd);
+void DifferentialControl::set_pid_gains(uint32_t motor_no, double feedforward, double kp, double ki, double kd) {
+    if(motor_no == 0) {
+      l_pid.set_gains(feedforward, kp, ki, kd);
+      r_pid.set_gains(feedforward, kp, ki, kd);
+    } else if(motor_no == 1) {
+      l_pid.set_gains(feedforward, kp, ki, kd);
+    } else if(motor_no == 2) {
+      r_pid.set_gains(feedforward, kp, ki, kd);
+    }
 }
 
 void DifferentialControl::speed_control(void *arg) {
@@ -53,7 +60,7 @@ void DifferentialControl::speed_control(void *arg) {
   l_pid.init(30, 1000);
   r_pid.init(30, 1000);
 
-  set_pid_gains(0.14, 0.2, 0.1, 0);
+  set_pid_gains(0, 0.14, 0.2, 0.1, 0);
 
   while(true) {
 
@@ -95,41 +102,19 @@ void DifferentialControl::speed_control(void *arg) {
 }
 
 msg_t DifferentialControl::sendMotorsSpeed(double v1, double v2, double v3) {
-  BytesWriteBuffer* buffer_pos;
-  // get a free buffer. no timeout.
-  msg_t ret = chMBFetchTimeout(&mb_free_msgs, (msg_t *)&buffer_pos, TIME_IMMEDIATE);
-  if(ret != MSG_OK) {
-    return ret;
-  }
-
-  UpMessage msg;
-  auto& motors_speed = msg.mutable_motor_speed_report();
+  Message msg;
+  auto& motors_speed = msg.mutable_motors_speed();
   motors_speed.set_v1(v1);
   motors_speed.set_v2(v2);
   motors_speed.set_v3(v3);
-  msg.serialize(*buffer_pos);
-  // post the new message for the communication thread. no timeout.
-  (void)chMBPostTimeout(&mb_filled_msgs, (msg_t)buffer_pos, TIME_IMMEDIATE);
-
-  return ret;
+  return post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
 }
 
 msg_t DifferentialControl::sendMotorsCmd(double cmd1, double cmd2, double cmd3) {
-  BytesWriteBuffer* buffer_pos;
-  // get a free buffer. no timeout.
-  msg_t ret = chMBFetchTimeout(&mb_free_msgs, (msg_t *)&buffer_pos, TIME_IMMEDIATE);
-  if(ret != MSG_OK) {
-    return ret;
-  }
-
-  UpMessage msg;
-  auto& motors_cmd= msg.mutable_motor_cmd_report();
+  Message msg;
+  auto& motors_cmd= msg.mutable_motors_cmd();
   motors_cmd.set_cmd1(cmd1);
   motors_cmd.set_cmd2(cmd2);
   motors_cmd.set_cmd3(cmd3);
-  msg.serialize(*buffer_pos);
-  // post the new message for the communication thread. no timeout.
-  (void)chMBPostTimeout(&mb_filled_msgs, (msg_t)buffer_pos, TIME_IMMEDIATE);
-
-  return ret;
+  return post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
 }

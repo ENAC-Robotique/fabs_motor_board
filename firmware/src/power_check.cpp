@@ -12,8 +12,8 @@ extern "C" {
 //#include "printf.h"
 
 #include "BytesWriteBuffer.h"
-#include "communication.h"
-#include "coinlang_up.h"
+#include "utils.h"
+#include "messages.h"
 
 #define PERIOD_BATTERY_REPORT 1000
 
@@ -76,20 +76,11 @@ static void power_check (void *arg) {
 }
 
 msg_t sendBatteryReport(float voltage) {
-        BytesWriteBuffer* buffer;
-        // get a free buffer. timeout of 5ms
-        msg_t ret = chMBFetchTimeout(&mb_free_msgs, (msg_t *)&buffer, TIME_MS2I(5));
-        if(ret == MSG_OK) {
-            // OK
-            UpMessage msg;
-            auto& battery_report = msg.mutable_battery_report();
-            battery_report.set_voltage(voltage);
-            msg.serialize(*buffer);
-
-            // post the new message for the communication thread. timeout of 10 ms
-            (void)chMBPostTimeout(&mb_filled_msgs, (msg_t)buffer, TIME_MS2I(10));
-        }
-        return ret;
+  Message msg;
+  auto& battery_report = msg.mutable_bat();
+  battery_report.set_voltage(voltage);
+  msg_t ret = post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
+  return ret;
 }
 
 void start_power_check() {

@@ -39,6 +39,6 @@ void set_speed_setPoint(double vx, double vy, double vtheta) {
   speed_ctrl.set_speed_setPoint(vx, vy, vtheta);
 }
 
-void set_pid_gains(double ng, double kp, double ki, double kd) {
-  speed_ctrl.set_pid_gains(ng, kp, ki, kd);
+void set_pid_gains(uint32_t motor_no, double feedforward, double kp, double ki, double kd) {
+  speed_ctrl.set_pid_gains(motor_no, feedforward, kp, ki, kd);
 }
