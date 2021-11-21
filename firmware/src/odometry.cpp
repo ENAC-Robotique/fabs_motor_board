@@ -12,6 +12,8 @@ extern "C" {
 #include "BytesWriteBuffer.h"
 #include "messages.h"
 
+using namespace protoduck;
+
 OdometryDiff odometry;
 
 void OdometryDiff::update_pos(double elapsed) {

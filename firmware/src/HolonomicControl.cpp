@@ -21,6 +21,8 @@ extern "C" {
 #include "utils.h"
 #include "messages.h"
 
+using namespace protoduck;
+
 msg_t sendMotorReport(float m1, float m2, float m3) {
   Message msg;
   auto& motors_speed = msg.mutable_motors_speed();

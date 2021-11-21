@@ -18,6 +18,8 @@ extern "C" {
 #include "BytesWriteBuffer.h"
 #include "messages.h"
 
+using namespace protoduck;
+
 
 BytesWriteBuffer msgBuffer[NUM_MESSAGES];
 
@@ -31,6 +33,7 @@ MAILBOX_DECL(mb_filled_msgs, free_messages_queue, NUM_MESSAGES);
 
 
 BytesReadBuffer read_buffer;
+
 Message msg;
 
 /**

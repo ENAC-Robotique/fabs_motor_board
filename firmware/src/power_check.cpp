@@ -15,6 +15,9 @@ extern "C" {
 #include "utils.h"
 #include "messages.h"
 
+using namespace protoduck;
+
+
 #define PERIOD_BATTERY_REPORT 1000
 
 static msg_t sendBatteryReport(float voltage);

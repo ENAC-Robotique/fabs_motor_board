@@ -15,10 +15,11 @@ extern "C" {
     
 }
 
+using namespace protoduck;
 
 #define SETPOINT_VALIDITY 1000  //ms
-#define MOTOR_CONTROL_PERIOD 0.1
-#define ODOMETRY_PERIOD 0.1
+#define MOTOR_CONTROL_PERIOD 0.05
+#define ODOMETRY_PERIOD 0.05
 
 
 
@@ -93,8 +94,8 @@ void DifferentialControl::speed_control(void *arg) {
 
       //chprintf ((BaseSequentialStream*)&SDU1, "speeds = %f\t%f\r\n", speed_left, speed_right);
 
-      sendMotorsSpeed(speed_left, speed_right, 0);
-      sendMotorsCmd(l_pid.get_setpoint(), l_pid.get_precommand(), 0);
+      //sendMotorsSpeed(speed_left, speed_right, 0);
+      //sendMotorsCmd(l_pid.get_setpoint(), l_pid.get_precommand(), 0);
 
       lastTime_motors = now;
     }

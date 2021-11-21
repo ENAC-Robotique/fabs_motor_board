@@ -2,7 +2,7 @@
 
 #include "ch.h"
 
-#define PERIOD_ODOM_REPORT 0.5
+#define PERIOD_ODOM_REPORT 0.1
 
 #define MOTOR_INC_PER_MM 17.31
 #define CODING_INC_PER_MM 52.287852

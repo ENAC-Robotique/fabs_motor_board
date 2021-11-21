@@ -3,6 +3,8 @@
 #include "ch.h"
 #include "communication.h"
 
+using namespace protoduck;
+
 /**
  * Centers an angle in radians to [-pi, pi[
  */
