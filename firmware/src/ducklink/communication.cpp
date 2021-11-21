@@ -89,12 +89,15 @@ int check_messages(Message& dmsg) {
     }
 
     if(_rcv_state == _RCV_PAYLOAD) {
-        uint8_t token;
-        size_t ret = sdReadTimeout(&SD5, &token, 1, TIME_IMMEDIATE);
-        if(ret > 0) {
-            msg_chk ^= token;
-            _nb_bytes_expected -= ret;
-            bool buf_ok = read_buffer.push(token);
+        uint8_t tokens[50];
+        uint8_t nb_bytes_to_read = _nb_bytes_expected;
+        if(nb_bytes_to_read >= 50) {nb_bytes_to_read = 50;}
+
+        size_t ret = sdReadTimeout(&SD5, tokens, _nb_bytes_expected, TIME_IMMEDIATE);
+        for(size_t i=0; i<ret; i++) {
+            msg_chk ^= tokens[i];
+            _nb_bytes_expected -= 1;
+            bool buf_ok = read_buffer.push(tokens[i]);
             
             if(!buf_ok) {
                 chprintf ((BaseSequentialStream*)&SDU1, "read buffer put error!\r\n");
@@ -102,6 +105,7 @@ int check_messages(Message& dmsg) {
 
             if(_nb_bytes_expected == 0) {
                 _rcv_state = _RCV_CHK;
+                break;
             }
         }
         
