@@ -10,7 +10,6 @@
 #define WHEELBASE 175.5
 #define CODING_WHEELBASE 246.548
 
-
 double RW_to_W(double rw);
 double W_to_RW(double w);
 
@@ -32,6 +31,8 @@ public:
     double get_x(void) {return _x;}
     double get_y(void) {return _y;}
     double get_theta(void) {return _theta;}
+
+    void set_pos(double x, double y, double theta);
 
     
 

@@ -16,6 +16,13 @@ using namespace protoduck;
 
 OdometryDiff odometry;
 
+
+void OdometryDiff::set_pos(double x, double y, double theta) {
+  _x = x;
+  _y = y;
+  _theta = theta;
+}
+
 void OdometryDiff::update_pos(double elapsed) {
     static systime_t lastOdomReportTime = 0;
     int32_t delta_left = get_delta_enc3();

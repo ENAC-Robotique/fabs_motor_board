@@ -221,6 +221,11 @@ static void el_communicator (void *arg)
             auto kd = msg.motor_pid().kd();
             // acquire lock ?!
             set_pid_gains(motor_no, feedforward, kp, ki, kd);
+        } else if(msg.has_pos() && msg.msg_type() == Message::MsgType::COMMAND) {
+            double x = msg.pos().get_x();
+            double y = msg.pos().get_y();
+            double theta = msg.pos().get_theta();
+            odometry.set_pos(x, y, theta);
         }
         
     }
