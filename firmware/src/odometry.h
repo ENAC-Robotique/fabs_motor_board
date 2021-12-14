@@ -3,6 +3,9 @@
 #include "ch.h"
 
 #define PERIOD_ODOM_REPORT 0.1
+#define PERIOD_SLIP_REPORT 0.1
+
+#define SLIP_THRESHOLD 15.0
 
 #define MOTOR_INC_PER_MM 17.31
 #define CODING_INC_PER_MM 52.287852
@@ -17,7 +20,10 @@ double W_to_RW(double w);
 class OdometryDiff {
 public:
 
-    OdometryDiff(): speed(0), omega(0), speed_left(0), speed_right(0), _x(0), _y(0), _theta(0) {}
+    OdometryDiff(): speed(0), omega(0),
+        speed_left(0), speed_right(0),
+        _x(0), _y(0), _theta(0),
+        slip_left(0), slip_right(0) {}
     
     void update_pos(double elapsed);
     void update_mot(double elapsed);
@@ -49,6 +55,9 @@ private:
     double _x;
     double _y;
     double _theta;
+
+    double slip_left;
+    double slip_right;
 };
 
 

@@ -38,18 +38,38 @@ void OdometryDiff::update_pos(double elapsed) {
     _theta = center_radians(_theta + angle);
 
 
-    if(chVTTimeElapsedSinceX(lastOdomReportTime) > TIME_MS2I(PERIOD_ODOM_REPORT)) {
+    if(chVTTimeElapsedSinceX(lastOdomReportTime) > chTimeMS2I(PERIOD_ODOM_REPORT)) {
       sendOdomReport();
       lastOdomReportTime = chVTGetSystemTime();
     }
 }
 
 void OdometryDiff::update_mot(double elapsed) {
+  static systime_t lastSlipReportTime = 0;
   int32_t delta_mot_left = get_delta_enc1();
   int32_t delta_mot_right = get_delta_enc2();
 
   speed_left  = static_cast<double>(delta_mot_left) / (MOTOR_INC_PER_MM*elapsed);
   speed_right = static_cast<double>(delta_mot_right)/ (MOTOR_INC_PER_MM*elapsed);
+
+  double th_left = speed - omega * WHEELBASE / 2.0;
+  double th_right = speed + omega * WHEELBASE / 2.0;
+  double sl = th_left - speed_left;
+  double sr = th_right - speed_right;
+  double alpha = 0.1;
+  slip_left  = (1-alpha) * slip_left  + alpha * sl;
+  slip_right = (1-alpha) * slip_right + alpha * sr;
+
+  if(chVTTimeElapsedSinceX(lastSlipReportTime) > chTimeMS2I(PERIOD_SLIP_REPORT)) {
+    if(abs(slip_left) > SLIP_THRESHOLD || abs(slip_right) > SLIP_THRESHOLD) {
+      Message msg;
+      auto& slip_report = msg.mutable_slip();
+      slip_report.set_slip_left(slip_left);
+      slip_report.set_slip_right(slip_right);
+      post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
+      lastSlipReportTime = chVTGetSystemTime();
+    }
+  }
 }
 
 
