@@ -28,8 +28,8 @@ void DifferentialControl::set_speed_setPoint(double vx, double vy, double vtheta
     omega_setPoint = vtheta;
 
 
-    double spl = speed_setPoint - WHEELBASE*omega_setPoint/2;
-    double spr = speed_setPoint + WHEELBASE*omega_setPoint/2;
+    double spl = speed_setPoint + WHEELBASE*omega_setPoint/2;
+    double spr = speed_setPoint - WHEELBASE*omega_setPoint/2;
 
 
     l_pid.set_setpoint(spl);
