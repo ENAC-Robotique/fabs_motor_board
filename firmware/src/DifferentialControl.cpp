@@ -1,5 +1,5 @@
 #include "DifferentialControl.h"
-#include "odometry.h"
+#include "OdometryDiff.h"
 #include "motors.h"
 #include "encoders.h"
 #include "hal.h"
@@ -21,7 +21,33 @@ using namespace protoduck;
 #define MOTOR_CONTROL_PERIOD 0.05
 #define ODOMETRY_PERIOD 0.05
 
+void DifferentialControl::init() {
+  auto set_setpoint_cb = [this](Message& msg) {
+    if (msg.has_speed() && msg.msg_type() == Message::MsgType::COMMAND) {
+          auto vx = msg.speed().vx();
+          auto vy = msg.speed().vy();
+          auto vtheta = msg.speed().vtheta();
+          //chprintf ((BaseSequentialStream*)&SDU1, "Speed cmd: %f, %f, %f\r\n\r\n", vx, vy, vtheta);
+          // acquire lock ?!
+          set_speed_setPoint(vx, vy, vtheta);
+      }
+  };
 
+  auto set_pid_gains_cb = [this](Message& msg) {
+    if(msg.has_motor_pid() && msg.msg_type() == Message::MsgType::COMMAND) {
+          auto motor_no = msg.motor_pid().motor_no();
+          auto feedforward = msg.motor_pid().feedforward();
+          auto kp = msg.motor_pid().kp();
+          auto ki = msg.motor_pid().ki();
+          auto kd = msg.motor_pid().kd();
+          // acquire lock ?!
+          set_pid_gains(motor_no, feedforward, kp, ki, kd);
+      }
+  };
+
+  register_callback(set_setpoint_cb);
+  register_callback(set_pid_gains_cb);
+}
 
 void DifferentialControl::set_speed_setPoint(double vx, double vy, double vtheta) {
     speed_setPoint = vx;

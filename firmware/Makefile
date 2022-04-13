@@ -179,12 +179,13 @@ CPPSRC =  src/ducklink/communication.cpp \
           src/ducklink/BytesWriteBuffer.cpp \
           src/power_check.cpp \
           src/motors.cpp \
-          src/odometry.cpp \
+          src/OdometryHolo.cpp \
           src/speed_control.cpp \
           src/HolonomicControl.cpp \
           src/DifferentialControl.cpp \
           src/encoders.cpp \
           src/utils.cpp \
+          src/OdometryDiff.cpp \
           src/main.cpp
 
 CPPSRC += $(EMBEDDED_PROTO_SRC)

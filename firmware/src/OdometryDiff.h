@@ -2,6 +2,7 @@
 
 #include "ch.h"
 
+
 #define PERIOD_ODOM_REPORT 0.1
 #define PERIOD_SLIP_REPORT 0.1
 
@@ -9,13 +10,8 @@
 
 #define MOTOR_INC_PER_MM 17.31
 #define CODING_INC_PER_MM 52.287852
-//#define ROBOT_RADIUS    125.0
 #define WHEELBASE 175.5
 #define CODING_WHEELBASE 246.548
-
-double RW_to_W(double rw);
-double W_to_RW(double w);
-
 
 class OdometryDiff {
 public:
@@ -24,6 +20,8 @@ public:
         speed_left(0), speed_right(0),
         _x(0), _y(0), _theta(0),
         slip_left(0), slip_right(0) {}
+    
+    void init();
     
     void update_pos(double elapsed);
     void update_mot(double elapsed);
@@ -58,25 +56,6 @@ private:
 
     double slip_left;
     double slip_right;
-};
-
-
-
-class OdometryHolonomic {
-public:
-    double get_speed(void);
-    double get_omega(void);
-
-    double get_x(void);
-    double get_y(void);
-    double get_theta(void);
-
-    double get_vx(void);
-    double get_vy(void);
-    double get_vtheta(void);
-
-    void update_odometry(double elapsed);
-
 };
 
 extern OdometryDiff odometry;

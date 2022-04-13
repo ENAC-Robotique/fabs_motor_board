@@ -1,6 +1,10 @@
 #ifndef COMMUNICATION_H
 #define COMMUNICATION_H
 
+#include <functional>
+#include "messages.h"
+
+using namespace protoduck;
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,6 +28,10 @@ enum MessagesStates {
     COM_NO_MSG,
     COM_ERROR,
 };
+
+typedef std::function<void(Message&)> msg_callback_t;
+
+void register_callback(msg_callback_t cb);
 
 void start_communication(void);
 int check_messages();

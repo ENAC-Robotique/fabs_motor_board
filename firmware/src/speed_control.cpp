@@ -3,6 +3,7 @@
 #include <ch.h>
 #include "HolonomicControl.h"
 #include "DifferentialControl.h"
+#include "OdometryDiff.h"
 #include "config.h"
 
 #if defined(DRIVE_CONF_DIFFERENTIAL) && defined(DRIVE_CONF_HOLONOMIC)
@@ -25,20 +26,12 @@ static THD_WORKING_AREA(waSpeedControl, 1000);
 
 static void spctrl(void* arg) {
   chRegSetThreadName("Speed Control");
+  odometry.init();
+  speed_ctrl.init();
   speed_ctrl.speed_control(arg);
 }
 
 void start_motor_control_pid() {
 
   chThdCreateStatic(waSpeedControl, sizeof(waSpeedControl), NORMALPRIO, &spctrl, NULL);
-}
-
-
-
-void set_speed_setPoint(double vx, double vy, double vtheta) {
-  speed_ctrl.set_speed_setPoint(vx, vy, vtheta);
-}
-
-void set_pid_gains(uint32_t motor_no, double feedforward, double kp, double ki, double kd) {
-  speed_ctrl.set_pid_gains(motor_no, feedforward, kp, ki, kd);
 }

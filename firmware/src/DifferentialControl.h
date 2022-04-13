@@ -9,6 +9,8 @@ public:
 
     DifferentialControl(): speed_setPoint(0), omega_setPoint(0){}
 
+    void init();
+
     void set_speed_setPoint(double vx, double vy, double vtheta);
     void set_pid_gains(uint32_t motor_no, double feedforward, double kp, double ki, double kd);
     void speed_control(void *arg);

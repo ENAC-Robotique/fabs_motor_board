@@ -12,13 +12,11 @@ extern "C" {
 }
 #endif
 
-#include "odometry.h"
+#include "OdometryDiff.h"
 #include "communication.h"
 #include "BytesReadBuffer.h"
 #include "BytesWriteBuffer.h"
-#include "messages.h"
 
-using namespace protoduck;
 
 
 BytesWriteBuffer msgBuffer[NUM_MESSAGES];
@@ -30,17 +28,25 @@ msg_t filled_messages_queue[NUM_MESSAGES];
 MAILBOX_DECL(mb_filled_msgs, free_messages_queue, NUM_MESSAGES);
 
 
+constexpr size_t NUM_CALLBACKS = 10;
+msg_callback_t callbacks[NUM_CALLBACKS] = {0};
 
 
-BytesReadBuffer read_buffer;
+void register_callback(msg_callback_t cb) {
+    for(size_t i=0; i<NUM_CALLBACKS; i++) {
+        if(!callbacks[i]) {
+            callbacks[i] = cb;
+            break;
+        }
+    }
+}
 
-Message msg;
 
 /**
  *  Received message from serial. Non-blocking function.
  *  Returns COM_OK if a message is available.
  */
-int check_messages(Message& dmsg) {
+int check_messages(Message& dmsg, BytesReadBuffer& read_buffer) {
     dmsg.clear();
     static enum RcvState _rcv_state = _RCV_START1ST;
     static uint8_t _nb_bytes_expected;
@@ -149,35 +155,11 @@ static void el_communicator (void *arg)
   (void)arg;
   chRegSetThreadName("odomReport");
 
-  systime_t lastTime = chVTGetSystemTime();
+  BytesReadBuffer read_buffer;
+
+  Message msg;
 
   while (true) {
-
-    systime_t now = chVTGetSystemTime();
-    float elapsed = ((float)(now - lastTime)) / CH_CFG_ST_FREQUENCY;
-
-    // if(elapsed > 0.1) {
-    //     struct UpOdomReport odom_report = {
-    //         .x = get_x(),
-    //         .y = get_y(),
-    //         .theta = get_theta(),
-    //     };
-    //     uint8_t buf[SIZE_UpOdomReport];
-    //     up_odom_report_to_bytes(&odom_report, buf);
-    //     sdWrite(&SD5, (uint8_t *) buf, SIZE_UpOdomReport);
-
-    //     struct UpSpeedReport speed_report = {
-    //         .vx = get_vx(),
-    //         .vy = get_vy(),
-    //         .vtheta = get_vtheta(),
-    //     };
-    //     uint8_t buf_speed_report[SIZE_UpSpeedReport];
-    //     up_speed_report_to_bytes(&speed_report, buf_speed_report);
-    //     sdWrite(&SD5, (uint8_t *) buf_speed_report, SIZE_UpSpeedReport);
-
-    //     lastTime = now;
-    // }
-
 
     BytesWriteBuffer *buffer;
     // send throught UART all messages ready to be sent.
@@ -204,34 +186,17 @@ static void el_communicator (void *arg)
         (void)chMBPostTimeout(&mb_free_msgs, (msg_t)buffer, 0);
     }
     
-    int ret = check_messages(msg);
+    int ret = check_messages(msg, read_buffer);
     if(ret == COM_OK) {
-        if (msg.has_speed() && msg.msg_type() == Message::MsgType::COMMAND) {
-            auto vx = msg.speed().vx();
-            auto vy = msg.speed().vy();
-            auto vtheta = msg.speed().vtheta();
-            //chprintf ((BaseSequentialStream*)&SDU1, "Speed cmd: %f, %f, %f\r\n\r\n", vx, vy, vtheta);
-            // acquire lock ?!
-            set_speed_setPoint(vx, vy, vtheta);
-        } else if(msg.has_motor_pid() && msg.msg_type() == Message::MsgType::COMMAND) {
-            auto motor_no = msg.motor_pid().motor_no();
-            auto feedforward = msg.motor_pid().feedforward();
-            auto kp = msg.motor_pid().kp();
-            auto ki = msg.motor_pid().ki();
-            auto kd = msg.motor_pid().kd();
-            // acquire lock ?!
-            set_pid_gains(motor_no, feedforward, kp, ki, kd);
-        } else if(msg.has_pos() && msg.msg_type() == Message::MsgType::COMMAND) {
-            double x = msg.pos().get_x();
-            double y = msg.pos().get_y();
-            double theta = msg.pos().get_theta();
-            odometry.set_pos(x, y, theta);
-        }
-        
+      for(size_t i=0; i<NUM_CALLBACKS; i++) {
+          if(callbacks[i]) {
+              callbacks[i](msg);
+          }
+      }
     }
-    
-      palToggleLine(LINE_LED_UART);
-      chThdSleepMilliseconds(1);
+  
+    palToggleLine(LINE_LED_UART);
+    chThdSleepMilliseconds(1);
 
   }
 }

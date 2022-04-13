@@ -32,8 +32,8 @@ static void cmd_param(BaseSequentialStream *lchp, int argc,const char* const arg
 static void cmd_encoders(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 static void cmd_motors(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 static void cmd_pos(BaseSequentialStream *lchp, int argc,const char* const argv[]);
-static void cmd_speed(BaseSequentialStream *lchp, int argc,const char* const argv[]);
-static void cmd_pid(BaseSequentialStream *lchp, int argc,const char* const argv[]);
+//static void cmd_speed(BaseSequentialStream *lchp, int argc,const char* const argv[]);
+//static void cmd_pid(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 static void cmd_help(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 
 static const ShellCommand commands[] = {
@@ -46,8 +46,8 @@ static const ShellCommand commands[] = {
   {"enc", cmd_encoders},	// affiche position des encoders
   {"mot", cmd_motors},	// donne une consigne moteur
   {"pos", cmd_pos},	// affiche position
-  {"speed", cmd_speed},	// donne une consigne de vitesse
-  {"pid", cmd_pid},	// set PID gains
+  //{"speed", cmd_speed},	// donne une consigne de vitesse
+  //{"pid", cmd_pid},	// set PID gains
   {"help", cmd_help},
   {NULL, NULL}			// marqueur de fin de tableau
 };
@@ -107,18 +107,18 @@ static void cmd_motors(BaseSequentialStream *lchp, int argc,const char* const ar
   }
 }
 
-static void cmd_speed(BaseSequentialStream *lchp, int argc,const char* const argv[])
-{
-  if (argc < 3) {  // si aucun paramètre n'a été passé à la commande param 
-    chprintf (lchp, "Usage: mot <vx> <vy> <vtheta>\r\n");
-  } else { // sinon (un ou plusieurs pararamètres passés à la commande param 
-      float vx = atof (argv[0]);
-      float vy = atof (argv[1]);
-      float vtheta = atof (argv[2]);
+// static void cmd_speed(BaseSequentialStream *lchp, int argc,const char* const argv[])
+// {
+//   if (argc < 3) {  // si aucun paramètre n'a été passé à la commande param 
+//     chprintf (lchp, "Usage: mot <vx> <vy> <vtheta>\r\n");
+//   } else { // sinon (un ou plusieurs pararamètres passés à la commande param 
+//       float vx = atof (argv[0]);
+//       float vy = atof (argv[1]);
+//       float vtheta = atof (argv[2]);
       
-      set_speed_setPoint(vx, vy, vtheta);
-  }
-}
+//       set_speed_setPoint(vx, vy, vtheta);
+//   }
+// }
 
 static void cmd_encoders(BaseSequentialStream *lchp, int argc,const char* const argv[])
 {
@@ -144,19 +144,19 @@ static void cmd_pos(BaseSequentialStream *lchp, int argc,const char* const argv[
   // }
 }
 
-static void cmd_pid(BaseSequentialStream *lchp, int argc,const char* const argv[])
-{
-  if (argc < 3) {  // si aucun paramètre n'a été passé à la commande param 
-    chprintf (lchp, "Usage: pid <feedforward> <kp> <ki> <kd>\r\n");
-  } else { // sinon (un ou plusieurs pararamètres passés à la commande param 
-      float feedforward = atof (argv[0]);
-      float kp = atof (argv[1]);
-      float ki = atof (argv[2]);
-      float kd = atof (argv[3]);
+// static void cmd_pid(BaseSequentialStream *lchp, int argc,const char* const argv[])
+// {
+//   if (argc < 3) {  // si aucun paramètre n'a été passé à la commande param 
+//     chprintf (lchp, "Usage: pid <feedforward> <kp> <ki> <kd>\r\n");
+//   } else { // sinon (un ou plusieurs pararamètres passés à la commande param 
+//       float feedforward = atof (argv[0]);
+//       float kp = atof (argv[1]);
+//       float ki = atof (argv[2]);
+//       float kd = atof (argv[3]);
       
-      set_pid_gains(0, feedforward, kp, ki, kd);
-  }
-}
+//       set_pid_gains(0, feedforward, kp, ki, kd);
+//   }
+// }
 
 static void cmd_help(BaseSequentialStream *lchp, int argc,const char* const argv[])
 {
