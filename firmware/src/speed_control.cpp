@@ -18,7 +18,7 @@
 #if defined(DRIVE_CONF_HOLONOMIC)
 HolonomicControl speed_ctrl;
 #elif defined(DRIVE_CONF_DIFFERENTIAL)
-DifferentialControl speed_ctrl;
+//DifferentialControl speed_ctrl;
 #endif
 
 
@@ -26,9 +26,17 @@ static THD_WORKING_AREA(waSpeedControl, 1000);
 
 static void spctrl(void* arg) {
   chRegSetThreadName("Speed Control");
+  OdometryDiff odometry;
+  DifferentialControl speed_ctrl;
+  
   odometry.init();
   speed_ctrl.init();
-  speed_ctrl.speed_control(arg);
+  speed_ctrl.set_pid_gains(0, 0.14, 0.2, 0.1, 0);
+  while (true)
+  {
+    speed_ctrl.speed_control(&odometry);
+  }
+  
 }
 
 void start_motor_control_pid() {

@@ -64,14 +64,10 @@ int main (void)
   chSysInit();
   initHeap();		// initialisation du "tas" pour permettre l'allocation mémoire dynamique 
 
-  sdInit();
   sdStart(&SD5, &serialConfig);
 
   initPwms();
-  initEnc1(true);
-  initEnc2(false);
-  initEnc3(false);
-  initEnc4(true);
+
   setMot1(0);
   setMot2(0);
   setMot3(0);

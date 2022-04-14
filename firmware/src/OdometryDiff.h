@@ -58,4 +58,4 @@ private:
     double slip_right;
 };
 
-extern OdometryDiff odometry;
+//extern OdometryDiff odometry;

@@ -3,6 +3,7 @@
 
 #include <functional>
 #include "messages.h"
+#include <hal.h>
 
 using namespace protoduck;
 

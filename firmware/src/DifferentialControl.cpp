@@ -18,10 +18,17 @@ extern "C" {
 using namespace protoduck;
 
 #define SETPOINT_VALIDITY 1000  //ms
-#define MOTOR_CONTROL_PERIOD 0.05
-#define ODOMETRY_PERIOD 0.05
+#define MOTOR_CONTROL_PERIOD 50 //ms
+#define ODOMETRY_PERIOD 50 //ms
 
 void DifferentialControl::init() {
+  lastTime_odometry = chVTGetSystemTime();
+  lastTime_motors = chVTGetSystemTime();
+  setpoint_time = chVTGetSystemTime();
+
+  l_pid.init(30, 1000);
+  r_pid.init(30, 1000);
+
   auto set_setpoint_cb = [this](Message& msg) {
     if (msg.has_speed() && msg.msg_type() == Message::MsgType::COMMAND) {
           auto vx = msg.speed().vx();
@@ -77,54 +84,40 @@ void DifferentialControl::set_pid_gains(uint32_t motor_no, double feedforward, d
     }
 }
 
-void DifferentialControl::speed_control(void *arg) {
-  (void)arg;
+void DifferentialControl::speed_control(OdometryDiff* odometry) {
+  systime_t now = chVTGetSystemTime();
+  
+  
+  
+  // set speed setpoint to 0 is no speed command has been received since a while.
+  if(chVTTimeElapsedSinceX(setpoint_time) > chTimeMS2I(SETPOINT_VALIDITY)) {
+    set_speed_setPoint(0, 0, 0);
+  }
 
-  systime_t lastTime_odometry = chVTGetSystemTime();
-  systime_t lastTime_motors = chVTGetSystemTime();
-  setpoint_time = chVTGetSystemTime();
-
-  l_pid.init(30, 1000);
-  r_pid.init(30, 1000);
-
-  set_pid_gains(0, 0.14, 0.2, 0.1, 0);
-
-  while(true) {
-
-    systime_t now = chVTGetSystemTime();
+  if(chVTTimeElapsedSinceX(lastTime_odometry) > chTimeMS2I(ODOMETRY_PERIOD)) {
     double elapsed_odometry = chTimeMS2I(chVTTimeElapsedSinceX(lastTime_odometry))/1000.0;
+    odometry->update_pos(elapsed_odometry);
+    lastTime_odometry = now;
+  }
+
+  if(chVTTimeElapsedSinceX(lastTime_motors) > chTimeMS2I(MOTOR_CONTROL_PERIOD)) {
     double elapsed_motors = chTimeMS2I(chVTTimeElapsedSinceX(lastTime_motors))/1000.0;
-   
-    // set speed setpoint to 0 is no speed command has been received since a while.
-    if(chVTTimeElapsedSinceX(setpoint_time) > chTimeMS2I(SETPOINT_VALIDITY)) {
-      set_speed_setPoint(0, 0, 0);
-    }
 
-    if(elapsed_odometry > ODOMETRY_PERIOD) {
-      odometry.update_pos(elapsed_odometry);
-      lastTime_odometry = now;
-    }
+    odometry->update_mot(elapsed_motors);
 
+    double speed_left = odometry->get_speed_left();
+    double speed_right = odometry->get_speed_right();
+    double cmd_left =  l_pid.update(speed_left);
+    double cmd_right = r_pid.update(speed_right);
+    setMot1(cmd_left);
+    setMot2(-cmd_right);
 
-    if(elapsed_motors > MOTOR_CONTROL_PERIOD) {
-      
+    //chprintf ((BaseSequentialStream*)&SDU1, "speeds = %f\t%f\r\n", speed_left, speed_right);
 
-      odometry.update_mot(elapsed_motors);
+    //sendMotorsSpeed(speed_left, speed_right, 0);
+    //sendMotorsCmd(l_pid.get_setpoint(), l_pid.get_precommand(), 0);
 
-      double speed_left = odometry.get_speed_left();
-      double speed_right = odometry.get_speed_right();
-      double cmd_left =  l_pid.update(speed_left);
-      double cmd_right = r_pid.update(speed_right);
-      setMot1(cmd_left);
-      setMot2(-cmd_right);
-
-      //chprintf ((BaseSequentialStream*)&SDU1, "speeds = %f\t%f\r\n", speed_left, speed_right);
-
-      //sendMotorsSpeed(speed_left, speed_right, 0);
-      //sendMotorsCmd(l_pid.get_setpoint(), l_pid.get_precommand(), 0);
-
-      lastTime_motors = now;
-    }
+    lastTime_motors = now;
   }
 }
 
