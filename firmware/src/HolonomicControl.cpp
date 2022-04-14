@@ -23,6 +23,10 @@ extern "C" {
 
 using namespace protoduck;
 
+void HolonomicControl::init() {
+
+}
+
 msg_t sendMotorReport(float m1, float m2, float m3) {
   Message msg;
   auto& motors_speed = msg.mutable_motors_speed();

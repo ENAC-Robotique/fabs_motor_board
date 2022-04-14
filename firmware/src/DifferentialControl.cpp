@@ -22,6 +22,13 @@ using namespace protoduck;
 #define ODOMETRY_PERIOD 50 //ms
 
 void DifferentialControl::init() {
+
+  initPwms();
+
+  setMot1(0);
+  setMot2(0);
+  setMot3(0);
+
   lastTime_odometry = chVTGetSystemTime();
   lastTime_motors = chVTGetSystemTime();
   setpoint_time = chVTGetSystemTime();

@@ -32,12 +32,7 @@ ioline_t leds[] = {
 };
 
 
-static const SerialConfig serialConfig =  {
-  57600,
-  0,
-  USART_CR2_STOP1_BITS | USART_CR2_LINEN,
-  0
-};
+
 
 
 static THD_WORKING_AREA(waBlinker, 304);
@@ -64,13 +59,7 @@ int main (void)
   chSysInit();
   initHeap();		// initialisation du "tas" pour permettre l'allocation mémoire dynamique 
 
-  sdStart(&SD5, &serialConfig);
-
-  initPwms();
-
-  setMot1(0);
-  setMot2(0);
-  setMot3(0);
+  comm_init();
 
   chThdCreateStatic(waBlinker, sizeof(waBlinker), NORMALPRIO, &blinker, NULL); // lancement du thread 
   start_power_check();

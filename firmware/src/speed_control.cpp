@@ -4,6 +4,7 @@
 #include "HolonomicControl.h"
 #include "DifferentialControl.h"
 #include "OdometryDiff.h"
+#include "OdometryHolo.h"
 #include "config.h"
 
 #if defined(DRIVE_CONF_DIFFERENTIAL) && defined(DRIVE_CONF_HOLONOMIC)
@@ -15,17 +16,10 @@
 #endif
 
 
-#if defined(DRIVE_CONF_HOLONOMIC)
-HolonomicControl speed_ctrl;
-#elif defined(DRIVE_CONF_DIFFERENTIAL)
-//DifferentialControl speed_ctrl;
-#endif
-
-
 static THD_WORKING_AREA(waSpeedControl, 1000);
 
-static void spctrl(void* arg) {
-  chRegSetThreadName("Speed Control");
+static void diff_speed_control(void* arg) {
+  chRegSetThreadName("Differential speed control");
   OdometryDiff odometry;
   DifferentialControl speed_ctrl;
   
@@ -36,10 +30,27 @@ static void spctrl(void* arg) {
   {
     speed_ctrl.speed_control(&odometry);
   }
+}
+
+static void holo_speed_control(void* arg) {
+  chRegSetThreadName("Holonomic speed control");
+  OdometryHolo odometry;
+  HolonomicControl speed_ctrl;
   
+  odometry.init();
+  speed_ctrl.init();
+  // speed_ctrl.set_pid_gains(0, 0.14, 0.2, 0.1, 0);
+  while (true)
+  {
+    speed_ctrl.speed_control(&odometry);
+  }
 }
 
 void start_motor_control_pid() {
-
-  chThdCreateStatic(waSpeedControl, sizeof(waSpeedControl), NORMALPRIO, &spctrl, NULL);
+#if defined(DRIVE_CONF_HOLONOMIC)
+  chThdCreateStatic(waSpeedControl, sizeof(waSpeedControl), NORMALPRIO, &holo_speed_control, NULL);
+#elif defined(DRIVE_CONF_DIFFERENTIAL)
+  chThdCreateStatic(waSpeedControl, sizeof(waSpeedControl), NORMALPRIO, &diff_speed_control, NULL);
+#endif
+  
 }

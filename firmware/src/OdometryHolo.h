@@ -12,8 +12,10 @@ double W_to_RW(double w);
 
 
 
-class OdometryHolonomic {
+class OdometryHolo {
 public:
+    void init();
+
     double get_speed(void);
     double get_omega(void);
 

@@ -32,6 +32,7 @@ enum MessagesStates {
 
 typedef std::function<void(Message&)> msg_callback_t;
 
+void comm_init();
 void register_callback(msg_callback_t cb);
 
 void start_communication(void);

@@ -32,6 +32,8 @@ public:
         m_cmd_data{0, 0, 0}
         {}
 
+    void init();
+
     void set_speed_setPoint(float32_t vx, float32_t vy, float32_t vtheta);
     void set_speed_setPoint_norm_dir(float32_t speed, float32_t direction, float32_t omega);
     void set_pid_gains(float32_t kp, float32_t ki, float32_t kd);

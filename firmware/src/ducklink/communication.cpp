@@ -31,6 +31,17 @@ MAILBOX_DECL(mb_filled_msgs, free_messages_queue, NUM_MESSAGES);
 constexpr size_t NUM_CALLBACKS = 10;
 msg_callback_t callbacks[NUM_CALLBACKS] = {0};
 
+static const SerialConfig serialConfig =  {
+  57600,
+  0,
+  USART_CR2_STOP1_BITS | USART_CR2_LINEN,
+  0
+};
+
+void comm_init() {
+    sdStart(&SD5, &serialConfig);
+}
+
 
 void register_callback(msg_callback_t cb) {
     for(size_t i=0; i<NUM_CALLBACKS; i++) {
