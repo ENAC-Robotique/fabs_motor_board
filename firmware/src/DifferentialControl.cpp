@@ -33,8 +33,8 @@ void DifferentialControl::init() {
   lastTime_motors = chVTGetSystemTime();
   setpoint_time = chVTGetSystemTime();
 
-  l_pid.init(30, 1000);
-  r_pid.init(30, 1000);
+  l_pid.init(30, 2000);
+  r_pid.init(30, 2000);
 
   auto set_setpoint_cb = [this](Message& msg) {
     if (msg.has_speed() && msg.msg_type() == Message::MsgType::COMMAND) {
