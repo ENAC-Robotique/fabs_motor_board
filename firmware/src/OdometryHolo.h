@@ -1,32 +1,39 @@
 #pragma once
 
 #include "ch.h"
-
-#define ROBOT_RADIUS    113.0
-
-
-inline double RW_to_W(double rw) {return rw / ROBOT_RADIUS;}
-inline double W_to_RW(double w)  {return  w * ROBOT_RADIUS;}
+#include <Eigen/Core>
 
 
+#define PERIOD_ODOM_REPORT 100  // ms
+
+constexpr double ROBOT_RADIUS = 113.0;
+constexpr double INC_PER_MM = 18.12;
+
+
+extern const Eigen::Matrix<float, 3, 3> D;
 
 
 class OdometryHolo {
 public:
     void init();
 
-    double get_speed(void);
-    double get_omega(void);
+    void set_pos(double x, double y, double theta);
 
-    double get_x(void);
-    double get_y(void);
-    double get_theta(void);
+    double get_x(void) {return _position[0];}
+    double get_y(void) {return _position[1];}
+    double get_theta(void) {return _position[2];}
 
-    double get_vx(void);
-    double get_vy(void);
-    double get_vtheta(void);
+    double get_vx(void) {return _speed[0];}
+    double get_vy(void) {return _speed[1];}
+    double get_vtheta(void) {return _speed[2];}
 
-    void update_odometry(double elapsed);
+    void update(double elapsed);
+
+private:
+    msg_t sendOdomReport();
+
+    Eigen::Vector3f _position;
+    Eigen::Vector3f _speed;
 
 };
 

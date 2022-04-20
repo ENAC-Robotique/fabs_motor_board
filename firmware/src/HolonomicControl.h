@@ -3,20 +3,6 @@
 #include <hal.h>
 #include <Eigen/Core>
 
-/*
- *  |v1|   |-sin(O1)  cos(O1)  1|   |vx|
- *  |v2| = |-sin(O2)  cos(O2)  1| . |vy|
- *  |v3|   |-sin(O3)  cos(O3)  1|   |Rw|
- *
- *    m  =           D            .   v
- */
-#define DDATA \
-  { 0.0       ,  1.0, 1.0, \
-    -0.8660254, -0.5, 1.0, \
-    0.8660254 , -0.5, 1.0}
-
-//Euclidean speeds into motor speeds: m = Dv
-
 typedef float float32_t;
 class OdometryHolo;
 

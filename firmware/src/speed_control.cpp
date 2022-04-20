@@ -16,7 +16,7 @@
 #endif
 
 
-static THD_WORKING_AREA(waSpeedControl, 1000);
+static THD_WORKING_AREA(waSpeedControl, 2000);
 
 static void diff_speed_control(void* arg) {
   chRegSetThreadName("Differential speed control");
@@ -29,6 +29,7 @@ static void diff_speed_control(void* arg) {
   while (true)
   {
     speed_ctrl.speed_control(&odometry);
+    chThdSleepMilliseconds(1);
   }
 }
 
@@ -43,6 +44,7 @@ static void holo_speed_control(void* arg) {
   while (true)
   {
     speed_ctrl.speed_control(&odometry);
+    chThdSleepMilliseconds(1);
   }
 }
 

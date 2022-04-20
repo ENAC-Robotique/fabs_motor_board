@@ -3,8 +3,8 @@
 #include "ch.h"
 
 
-#define PERIOD_ODOM_REPORT 0.1
-#define PERIOD_SLIP_REPORT 0.1
+#define PERIOD_ODOM_REPORT 100  // ms
+#define PERIOD_SLIP_REPORT 100  //ms
 
 #define SLIP_THRESHOLD 15.0
 

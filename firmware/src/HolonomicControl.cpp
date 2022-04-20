@@ -22,17 +22,16 @@ extern "C" {
 #include "messages.h"
 #include "communication.h"
 
-constexpr double THETA0 = 0;
-constexpr double THETA2 = -2.0*M_PI/3.0;
-constexpr double THETA1 = 2.0*M_PI/3.0;
 
+/*
+ *  |v1|   |-sin(O1)  cos(O1)  1|   |vx|
+ *  |v2| = |-sin(O2)  cos(O2)  1| . |vy|
+ *  |v3|   |-sin(O3)  cos(O3)  1|   |Rw|
+ *
+ *    m  =           D            .   v
+ */
 
-const Eigen::Matrix<float, 3, 3> D {
-  {sin(THETA0), cos(THETA0), 1.0},
-  {sin(THETA1), cos(THETA1), 1.0},
-  {sin(THETA2), cos(THETA2), 1.0}
-};
-
+// Euclidean speeds into motor speeds: m = Dv
 
 
 using namespace protoduck;
@@ -100,7 +99,7 @@ void HolonomicControl::set_speed_setPoint(float32_t vx, float32_t vy, float32_t 
   chMtxLock(&(mut_speed_set_point));
   _speed_setPoint(0) = vx;
   _speed_setPoint(1) = vy;
-  _speed_setPoint(2) = W_to_RW(vtheta);
+  _speed_setPoint(2) = vtheta;  //W_to_RW(vtheta);
   setpoint_time = chVTGetSystemTime();
   chMtxUnlock(&(mut_speed_set_point));
 }
@@ -162,11 +161,12 @@ void HolonomicControl::speed_control(OdometryHolo* odometry)
   }
 
   if(chVTTimeElapsedSinceX(control_time) > chTimeMS2I(ODOMETRY_PERIOD)) {
-    double elapsed = chTimeMS2I(chVTTimeElapsedSinceX(control_time))/1000.0;
-    //odometry->update_pos(elapsed_odometry);
+    chTimeI2MS(chVTTimeElapsedSinceX(control_time))/1000.0;
+    double elapsed = chTimeI2MS(chVTTimeElapsedSinceX(control_time))/1000.0;
+    //chTimeMS2I(chVTTimeElapsedSinceX(control_time))/1000.0;
+    odometry->update(elapsed);
 
     Eigen::Vector3f m_speeds = {0, 0, 0};// = odometry.get_motor_speeds();    // get current motors speeds
-
 
     chMtxLock(&(mut_speed_set_point));
     // compute desired motors speed
@@ -197,11 +197,14 @@ void HolonomicControl::speed_control(OdometryHolo* odometry)
 
     Eigen::Vector3f m_cmd = m_errors * _kp + m_Ierr * _ki;
 
-    chprintf ((BaseSequentialStream*)&SDU1, "cmd: %f, %f, %f\r\n\r\n", m_cmd[0], m_cmd[1], m_cmd[2]);
+    // chprintf ((BaseSequentialStream*)&SDU1, "cmd: %f, %f, %f\r\n\r\n", m_cmd[0], m_cmd[1], m_cmd[2]);
     
     setMot1(m_cmd[0]);
     setMot2(m_cmd[1]);
     setMot3(m_cmd[2]);
+    // setMot1(20);
+    // setMot2(20);
+    // setMot3(20);
 
     sendMotorReport(m_cmd[0], m_cmd[1], m_cmd[2]);
 
