@@ -168,10 +168,6 @@ CSRC = $(STARTUPSRC) \
        src/ttyConsole.c \
        src/globalVar.c
 
-# files extracted from ARM CMSIS DSP
-DSPBASE = cmsis_arm
-include $(DSPBASE)/files.mk
-
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
 CPPSRC =  src/ducklink/communication.cpp \
@@ -265,7 +261,7 @@ CPPWARN = -Wall -Wextra -Wundef
 #
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS = -DTRACE
+UDEFS = -DTRACE -DEIGEN_NO_MALLOC -DEIGEN_NO_AUTOMATIC_RESIZING -DEIGEN_NO_DEBUG
 
 # Define ASM defines here
 UADEFS =
@@ -274,7 +270,7 @@ UADEFS =
 UINCDIR = src/ src/ducklink \
 	  $(EMBEDDED_PROTO_DIR)/src \
     $(BUILDDIR)/generated \
-    cmsis_arm
+    eigen
 
 # List the user directory to look for the libraries here
 ULIBDIR =

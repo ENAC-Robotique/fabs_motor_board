@@ -1,6 +1,6 @@
 
 #include "motors.h"
-#include "arm_math.h"
+#include <cmath>
 
 /*
 MOT1 : TIM5_CH1 TIM5_CH2

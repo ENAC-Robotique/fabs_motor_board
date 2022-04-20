@@ -1,7 +1,7 @@
 #pragma once
-#include "arm_math.h"
 #include "utils.h"
 #include <hal.h>
+#include <Eigen/Core>
 
 /*
  *  |v1|   |-sin(O1)  cos(O1)  1|   |vx|
@@ -17,27 +17,25 @@
 
 //Euclidean speeds into motor speeds: m = Dv
 
+typedef float float32_t;
+class OdometryHolo;
 
-#define SPEED_CONTROL_PERIOD 0.050
-#define ODOMETRY_PERIOD 0.025
+#define SPEED_CONTROL_PERIOD 50 //ms
+#define ODOMETRY_PERIOD 25   //ms
 
+#define SETPOINT_VALIDITY 1000  //ms
 
 class HolonomicControl {
 public:
 
-    HolonomicControl() : _kp(0), _ki(0), _kd(0),
-        _speed_setPoint_data{0, 0, 0},
-        D_data(DDATA),
-        m_Ierr_data{0, 0, 0},
-        m_cmd_data{0, 0, 0}
-        {}
+    HolonomicControl() : _kp(0), _ki(0), _kd(0) {}
 
     void init();
 
     void set_speed_setPoint(float32_t vx, float32_t vy, float32_t vtheta);
     void set_speed_setPoint_norm_dir(float32_t speed, float32_t direction, float32_t omega);
     void set_pid_gains(float32_t kp, float32_t ki, float32_t kd);
-    void speed_control(void *arg);
+    void speed_control(OdometryHolo* odometry);
 
 private:
 
@@ -48,34 +46,11 @@ float32_t _kp;
 float32_t _ki;
 float32_t _kd;
 
-float32_t _speed_setPoint_data[3];
-arm_matrix_instance_f32 _speed_setPoint = {
-    .numRows = 3, .numCols = 1,
-    .pData = _speed_setPoint_data
-};
+systime_t setpoint_time;
+systime_t control_time;
 
-float32_t D_data[9];
-arm_matrix_instance_f32 D = {
-  .numRows = 3,
-  .numCols = 3,
-  .pData = D_data
-};
-
-
-float32_t m_Ierr_data[3];
-arm_matrix_instance_f32 m_Ierr = {
-    .numRows = 3, .numCols = 1,
-    .pData = m_Ierr_data
-};
-
-float32_t m_cmd_data[3];
-arm_matrix_instance_f32 m_cmd = {
-    .numRows = 3, .numCols = 1,
-    .pData = m_cmd_data
-};
-
+Eigen::Vector3f _speed_setPoint;
+Eigen::Vector3f m_Ierr;
 
 MUTEX_DECL(mut_speed_set_point);
-
-
 };

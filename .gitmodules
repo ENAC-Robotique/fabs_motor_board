@@ -16,3 +16,6 @@
 [submodule "firmware/protoduck"]
 	path = firmware/protoduck
 	url = git@github.com:rustyducks/protoduck.git
+[submodule "firmware/eigen"]
+	path = firmware/eigen
+	url = https://gitlab.com/libeigen/eigen.git

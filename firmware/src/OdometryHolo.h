@@ -2,12 +2,11 @@
 
 #include "ch.h"
 
+#define ROBOT_RADIUS    113.0
 
-//#define ROBOT_RADIUS    125.0
 
-
-double RW_to_W(double rw);
-double W_to_RW(double w);
+inline double RW_to_W(double rw) {return rw / ROBOT_RADIUS;}
+inline double W_to_RW(double w)  {return  w * ROBOT_RADIUS;}
 
 
 
