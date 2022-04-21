@@ -87,8 +87,8 @@ void OdometryHolo::update(double elapsed) {
   Eigen::Vector3f robot_move_table = R * robot_move_r;
 
   _position += robot_move_table;
-  _position[3] = center_radians(_position[3]);
-  
+
+  _position(2) = center_radians(_position(2));
 
   if(chVTTimeElapsedSinceX(lastOdomReportTime) > chTimeMS2I(PERIOD_ODOM_REPORT)) {
     sendOdomReport();
