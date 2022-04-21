@@ -39,7 +39,7 @@ void OdometryHolo::init() {
   //initEnc4(true);
 
   _position = {0, 0, 0};
-  _speed = {0, 0, 0};
+  _speed_r = {0, 0, 0};
 
   auto cb_recalage = [this](Message& msg) {
       if(msg.has_pos() && msg.msg_type() == Message::MsgType::COMMAND) {
@@ -71,6 +71,7 @@ void OdometryHolo::update(double elapsed) {
   
   // robot move in robot frame
   Eigen::Vector3f robot_move_r = Dinv * motors_move;
+  _speed_r = robot_move_r / elapsed;
 
   // hypothesis: the movement is approximated as a straight line at heading [ oldTheta + dTheta/2 ]
   double theta_mean = _position[2] + robot_move_r[2]/2;
@@ -87,7 +88,7 @@ void OdometryHolo::update(double elapsed) {
 
   _position += robot_move_table;
   _position[3] = center_radians(_position[3]);
-  _speed = robot_move_table / elapsed;
+  
 
   if(chVTTimeElapsedSinceX(lastOdomReportTime) > chTimeMS2I(PERIOD_ODOM_REPORT)) {
     sendOdomReport();
@@ -109,9 +110,9 @@ msg_t OdometryHolo::sendOdomReport() {
 
 
   auto& speed_report = msg.mutable_speed();
-  speed_report.set_vx(get_vx());
-  speed_report.set_vy(get_vy());
-  speed_report.set_vtheta(get_vtheta());
+  speed_report.set_vx(_speed_r[0]);
+  speed_report.set_vy(_speed_r[1]);
+  speed_report.set_vtheta(_speed_r[2]);
   ret = post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
   return ret;
 }

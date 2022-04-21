@@ -22,10 +22,12 @@ public:
     double get_x(void) {return _position[0];}
     double get_y(void) {return _position[1];}
     double get_theta(void) {return _position[2];}
+    Eigen::Vector3f get_pos() {return _position;}
 
-    double get_vx(void) {return _speed[0];}
-    double get_vy(void) {return _speed[1];}
-    double get_vtheta(void) {return _speed[2];}
+    /**
+     * Speed in the robot frame
+     */
+    Eigen::Vector3f get_speed() {return _speed_r;}
 
     void update(double elapsed);
 
@@ -33,7 +35,7 @@ private:
     msg_t sendOdomReport();
 
     Eigen::Vector3f _position;
-    Eigen::Vector3f _speed;
+    Eigen::Vector3f _speed_r;
 
 };
 
