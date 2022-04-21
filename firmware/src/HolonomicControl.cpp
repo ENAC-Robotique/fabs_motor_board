@@ -36,6 +36,8 @@ extern "C" {
 
 using namespace protoduck;
 
+const Eigen::Vector3f ACCEL_MAX = {3000.0, 3000.0, 10.};
+
 void HolonomicControl::init() {
 
   initPwms();
@@ -43,8 +45,8 @@ void HolonomicControl::init() {
   setMot1(0);
   setMot2(0);
   setMot3(0);
-
-  set_speed_setPoint(0, 0, 0);
+  _setpoint_target = {0, 0, 0};
+  _speed_setPoint   = {0, 0, 0};
 
   set_pid_gains(0.1, 0, 0);
 
@@ -86,9 +88,6 @@ msg_t sendMotorReport(float m1, float m2, float m3) {
   return post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
 }
 
-
-//void clamping(arm_matrix_instance_f32* cmd, arm_matrix_instance_f32* error, const float32_t *mins, const float32_t *maxs, bool* clamps);
-
 /**
  * Set speed setPoint
  * vx: mm/s
@@ -97,9 +96,7 @@ msg_t sendMotorReport(float m1, float m2, float m3) {
  */
 void HolonomicControl::set_speed_setPoint(float32_t vx, float32_t vy, float32_t vtheta) {
   chMtxLock(&(mut_speed_set_point));
-  _speed_setPoint(0) = vx;
-  _speed_setPoint(1) = vy;
-  _speed_setPoint(2) = vtheta;  //W_to_RW(vtheta);
+  _setpoint_target = {vx, vy, vtheta};
   setpoint_time = chVTGetSystemTime();
   chMtxUnlock(&(mut_speed_set_point));
 }
@@ -113,9 +110,11 @@ void HolonomicControl::set_speed_setPoint(float32_t vx, float32_t vy, float32_t 
  */
 void HolonomicControl::set_speed_setPoint_norm_dir(float32_t speed, float32_t direction, float32_t omega) {
   chMtxLock(&(mut_speed_set_point));
-  _speed_setPoint(0) = speed * cos(direction);
-  _speed_setPoint(1) = speed * cos(direction);;
-  _speed_setPoint(2) = omega;
+  _setpoint_target = {
+    speed * cos(direction),
+    speed * sin(direction),
+    omega
+  };
   setpoint_time = chVTGetSystemTime();
   chMtxUnlock(&(mut_speed_set_point));
 }
@@ -127,29 +126,13 @@ void HolonomicControl::set_pid_gains(float32_t kp, float32_t ki, float32_t kd) {
   chprintf ((BaseSequentialStream*)&SDU1, "kp = %f\tki = %f\tkd = %f\r\n\r\n", kp, ki, kd);
 }
 
+void HolonomicControl::ramp_setpoint(double elapsed) {
+  auto max_setpoint = _speed_setPoint + ACCEL_MAX * elapsed;
+  auto min_setpoint = _speed_setPoint - ACCEL_MAX * elapsed;
 
-// static void clamping(Eigen::Vector3f cmd, Eigen::Vector3f error,
-//                       const Eigen::Vector3f mins, const Eigen::Vector3f maxs){
-//   for(int i=0;i<3;i++) {
-//     bool saturation, sign_eq = false;
-//     if(cmd->pData[i] <= mins[i] || cmd->pData[i] >= maxs[i]) { // saturate
-//       saturation = true;
-//     }
-
-//     if((cmd->pData[i] >= 0 && error->pData[i] >= 0) ||
-//        (cmd->pData[i] <= 0 && error->pData[i] <= 0)) {
-//       sign_eq = true;
-//     }
-
-//     if(saturation && sign_eq) {
-//       clamps[i] = true;
-//     } else {
-//       clamps[i] = false;
-//     }
-    
-//   }
-// }
-
+  auto h = _setpoint_target.array().min(max_setpoint.array());
+  _speed_setPoint = h.max(min_setpoint.array());
+}
 
 void HolonomicControl::speed_control(OdometryHolo* odometry)
 {
@@ -160,54 +143,25 @@ void HolonomicControl::speed_control(OdometryHolo* odometry)
     set_speed_setPoint(0, 0, 0);
   }
 
-  if(chVTTimeElapsedSinceX(control_time) > chTimeMS2I(ODOMETRY_PERIOD)) {
-    chTimeI2MS(chVTTimeElapsedSinceX(control_time))/1000.0;
-    double elapsed = chTimeI2MS(chVTTimeElapsedSinceX(control_time))/1000.0;
-    //chTimeMS2I(chVTTimeElapsedSinceX(control_time))/1000.0;
-    odometry->update(elapsed);
-
-    Eigen::Vector3f m_speeds = {0, 0, 0};// = odometry.get_motor_speeds();    // get current motors speeds
+  time_msecs_t elapsed_ms = chTimeI2MS(chVTTimeElapsedSinceX(control_time));
+  if(elapsed_ms > ODOMETRY_PERIOD) {
+    double elapsed_s = elapsed_ms/1000.0;
+    odometry->update(elapsed_s);
+    ramp_setpoint(elapsed_s);
 
     chMtxLock(&(mut_speed_set_point));
-    // compute desired motors speed
-    Eigen::Vector3f m_setpoints = D * _speed_setPoint;
+    Eigen::Vector3f speed_error = _speed_setPoint - odometry->get_speed();
     chMtxUnlock(&(mut_speed_set_point));
 
-    // compute errors
-    Eigen::Vector3f m_errors = m_setpoints - m_speeds;
+    Eigen::Vector3f speed_cmd = speed_error * _kp + m_Ierr * _ki;
 
-    //   // chMtxLock(&(mut_speed_set_point));
-    //   // chprintf ((BaseSequentialStream*)&SDU1, "sSp: %.2f %.2f %.2f  \r\n", 
-    //   //           _speed_setPoint.pData[0], _speed_setPoint.pData[1], _speed_setPoint.pData[2]);
-    //   // chMtxUnlock(&(mut_speed_set_point));
-    //   // chprintf ((BaseSequentialStream*)&SDU1, "mSp: %.2f %.2f %.2f  \r\n", 
-    //   //           m_setPoints.pData[0], m_setPoints.pData[1], m_setPoints.pData[2]);
-    //   // chprintf ((BaseSequentialStream*)&SDU1, "merr: %.2f %.2f %.2f  \r\ncmd: %.2f %.2f %.2f\r\n\r\n",
-    //   //           m_errors.pData[0], m_errors.pData[1], m_errors.pData[2],
-    //   //           m_cmd.pData[0], m_cmd.pData[1], m_cmd.pData[2]);
+    Eigen::Vector3f m_cmds = D * speed_cmd;
 
-    //   bool clamps[3];
-    //   clamping(&m_cmd, &m_errors, mins_cmd, maxs_cmd, clamps); // should be integrate ?
-    //   for(int i=0; i<3; i++) {                                    //integrate if allowed
-    //     if(!clamps[i]) {
-    //       m_Ierr.pData[i] += m_errors.pData[i];
-    //     }
-    //   }
+    setMot1(m_cmds[0]);
+    setMot2(m_cmds[1]);
+    setMot3(m_cmds[2]);
 
-
-    Eigen::Vector3f m_cmd = m_errors * _kp + m_Ierr * _ki;
-
-    // chprintf ((BaseSequentialStream*)&SDU1, "cmd: %f, %f, %f\r\n\r\n", m_cmd[0], m_cmd[1], m_cmd[2]);
-    
-    setMot1(m_cmd[0]);
-    setMot2(m_cmd[1]);
-    setMot3(m_cmd[2]);
-    // setMot1(20);
-    // setMot2(20);
-    // setMot3(20);
-
-    sendMotorReport(m_cmd[0], m_cmd[1], m_cmd[2]);
-
+    sendMotorReport(m_cmds[0], m_cmds[1], m_cmds[2]);
 
     control_time = now;
   }

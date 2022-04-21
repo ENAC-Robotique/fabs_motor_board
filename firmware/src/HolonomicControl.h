@@ -25,6 +25,8 @@ public:
 
 private:
 
+void ramp_setpoint(double elapsed);
+
 constexpr static float32_t mins_cmd[3] = {-1., -1., -1.};
 constexpr static float32_t maxs_cmd[3] = {1.,  1.,  1.};
 
@@ -35,6 +37,7 @@ float32_t _kd;
 systime_t setpoint_time;
 systime_t control_time;
 
+Eigen::Vector3f _setpoint_target;
 Eigen::Vector3f _speed_setPoint;
 Eigen::Vector3f m_Ierr;
 
