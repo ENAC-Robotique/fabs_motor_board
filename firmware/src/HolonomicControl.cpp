@@ -36,7 +36,7 @@ extern "C" {
 
 using namespace protoduck;
 
-const Eigen::Vector3f ACCEL_MAX = {3000.0, 3000.0, 10.};
+const Eigen::Vector3f ACCEL_MAX = {2000.0, 2000.0, 20.};
 
 void HolonomicControl::init() {
 
@@ -48,7 +48,7 @@ void HolonomicControl::init() {
   _setpoint_target = {0, 0, 0};
   _speed_setPoint   = {0, 0, 0};
 
-  set_pid_gains(0.1, 0, 0);
+  set_pid_gains(0.1, 0.2, 0.8, 0.);
 
   control_time = chVTGetSystemTime();
   setpoint_time = chVTGetSystemTime();
@@ -66,12 +66,12 @@ void HolonomicControl::init() {
   auto set_pid_gains_cb = [this](Message& msg) {
     if(msg.has_motor_pid() && msg.msg_type() == Message::MsgType::COMMAND) {
         //auto motor_no = msg.motor_pid().motor_no();
-        //auto feedforward = msg.motor_pid().feedforward();
+        auto feedforward = msg.motor_pid().feedforward();
         auto kp = msg.motor_pid().kp();
         auto ki = msg.motor_pid().ki();
         auto kd = msg.motor_pid().kd();
         // acquire lock ?!
-        set_pid_gains(kp, ki, kd);
+        set_pid_gains(feedforward, kp, ki, kd);
       }
   };
 
@@ -94,7 +94,7 @@ msg_t sendMotorReport(float m1, float m2, float m3) {
  * vy: mm/s
  * vtheta: rad/s
  */
-void HolonomicControl::set_speed_setPoint(float32_t vx, float32_t vy, float32_t vtheta) {
+void HolonomicControl::set_speed_setPoint(float vx, float vy, float vtheta) {
   chMtxLock(&(mut_speed_set_point));
   _setpoint_target = {vx, vy, vtheta};
   setpoint_time = chVTGetSystemTime();
@@ -108,7 +108,7 @@ void HolonomicControl::set_speed_setPoint(float32_t vx, float32_t vy, float32_t 
  * direction: speed direction in radians, [0, 2*pi]
  * omega: rotation speed in rad/s
  */
-void HolonomicControl::set_speed_setPoint_norm_dir(float32_t speed, float32_t direction, float32_t omega) {
+void HolonomicControl::set_speed_setPoint_norm_dir(float speed, float direction, float omega) {
   chMtxLock(&(mut_speed_set_point));
   _setpoint_target = {
     speed * cos(direction),
@@ -119,7 +119,8 @@ void HolonomicControl::set_speed_setPoint_norm_dir(float32_t speed, float32_t di
   chMtxUnlock(&(mut_speed_set_point));
 }
 
-void HolonomicControl::set_pid_gains(float32_t kp, float32_t ki, float32_t kd) {
+void HolonomicControl::set_pid_gains(float ng, float kp, float ki, float kd) {
+  _ng = ng;
   _kp = kp;
   _ki = ki;
   _kd = kd;
@@ -153,7 +154,11 @@ void HolonomicControl::speed_control(OdometryHolo* odometry)
     Eigen::Vector3f speed_error = _speed_setPoint - odometry->get_speed();
     chMtxUnlock(&(mut_speed_set_point));
 
-    Eigen::Vector3f speed_cmd = speed_error * _kp + m_Ierr * _ki;
+    integrate_error(speed_error, elapsed_s);
+
+    Eigen::Vector3f d_err = (speed_error - _speed_prev_error) / elapsed_s;
+
+    Eigen::Vector3f speed_cmd = _speed_setPoint * _ng + speed_error * _kp + _speed_integral_error * _ki + d_err * _kd;
 
     Eigen::Vector3f m_cmds = D * speed_cmd;
 
@@ -163,6 +168,24 @@ void HolonomicControl::speed_control(OdometryHolo* odometry)
 
     sendMotorReport(m_cmds[0], m_cmds[1], m_cmds[2]);
 
+    _speed_prev_error = speed_error;
+
     control_time = now;
   }
+}
+
+void HolonomicControl::integrate_error(Eigen::Vector3f error, double elapsed) {
+  if(abs(_ki) < 0.001) {
+    return;
+  }
+  //chprintf ((BaseSequentialStream*)&SDU1, "error: %f, %f, %f\r\n", error[0], error[1], error[2]);
+  _speed_integral_error += error * elapsed;
+  //chprintf ((BaseSequentialStream*)&SDU1, "int raw: %f, %f, %f\r\n", _speed_integral_error[0], _speed_integral_error[1], _speed_integral_error[2]);
+
+  Eigen::Vector3f cmd_i = D * (_speed_integral_error * _ki);
+  float factor = cmd_i.array().abs().maxCoeff() / 1.0;
+  if(factor > 100.0) {
+    _speed_integral_error /= factor;
+  }
+  //chprintf ((BaseSequentialStream*)&SDU1, "int clamp: %f, %f, %f\r\n\r\n", _speed_integral_error[0], _speed_integral_error[1], _speed_integral_error[2]);
 }
