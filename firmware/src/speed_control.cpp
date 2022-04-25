@@ -19,6 +19,7 @@
 static THD_WORKING_AREA(waSpeedControl, 2000);
 
 static void diff_speed_control(void* arg) {
+  (void)arg;
   chRegSetThreadName("Differential speed control");
   OdometryDiff odometry;
   DifferentialControl speed_ctrl;
@@ -34,6 +35,7 @@ static void diff_speed_control(void* arg) {
 }
 
 static void holo_speed_control(void* arg) {
+  (void)arg;
   chRegSetThreadName("Holonomic speed control");
   OdometryHolo odometry;
   HolonomicControl speed_ctrl;

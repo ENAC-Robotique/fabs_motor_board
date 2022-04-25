@@ -145,7 +145,7 @@ void HolonomicControl::speed_control(OdometryHolo* odometry)
   }
 
   time_msecs_t elapsed_ms = chTimeI2MS(chVTTimeElapsedSinceX(control_time));
-  if(elapsed_ms > ODOMETRY_PERIOD) {
+  if(elapsed_ms > CONTROL_PERIOD) {
     double elapsed_s = elapsed_ms/1000.0;
     odometry->update(elapsed_s);
     ramp_setpoint(elapsed_s);

@@ -6,8 +6,7 @@
 typedef float float32_t;
 class OdometryHolo;
 
-#define SPEED_CONTROL_PERIOD 50 //ms
-#define ODOMETRY_PERIOD 25   //ms
+#define CONTROL_PERIOD 25   //ms
 
 #define SETPOINT_VALIDITY 1000  //ms
 
