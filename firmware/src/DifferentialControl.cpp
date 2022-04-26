@@ -18,7 +18,7 @@ extern "C" {
 using namespace protoduck;
 
 #define SETPOINT_VALIDITY 1000  //ms
-#define MOTOR_CONTROL_PERIOD 50 //ms
+#define CONTROL_PERIOD 50 //ms
 #define ODOMETRY_PERIOD 50 //ms
 
 void DifferentialControl::init() {
@@ -102,13 +102,13 @@ void DifferentialControl::speed_control(OdometryDiff* odometry) {
   }
 
   if(chVTTimeElapsedSinceX(lastTime_odometry) > chTimeMS2I(ODOMETRY_PERIOD)) {
-    double elapsed_odometry = chTimeMS2I(chVTTimeElapsedSinceX(lastTime_odometry))/1000.0;
+    double elapsed_odometry = chTimeI2MS(chVTTimeElapsedSinceX(lastTime_odometry))/1000.0;
     odometry->update_pos(elapsed_odometry);
     lastTime_odometry = now;
   }
 
-  if(chVTTimeElapsedSinceX(lastTime_motors) > chTimeMS2I(MOTOR_CONTROL_PERIOD)) {
-    double elapsed_motors = chTimeMS2I(chVTTimeElapsedSinceX(lastTime_motors))/1000.0;
+  if(chVTTimeElapsedSinceX(lastTime_motors) > chTimeMS2I(CONTROL_PERIOD)) {
+    double elapsed_motors = chTimeI2MS(chVTTimeElapsedSinceX(lastTime_motors))/1000.0;
 
     odometry->update_mot(elapsed_motors);
 
