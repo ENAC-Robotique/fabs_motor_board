@@ -8,47 +8,30 @@
 #include "ttyConsole.h"
 #include "stdutil.h"
 #include "globalVar.h"
-#include "rtcAccess.h"
 #include "printf.h"
-#include "portage.h"
+
+#if CONSOLE_DEV_USB == TRUE
 #include "usb_serial.h"
+#endif
+
 
 /*===========================================================================*/
 /* START OF EDITABLE SECTION                                           */
 /*===========================================================================*/
 
-//#include "encoders.h"
-#include "speed_control.h"
-#include "motors.h"
-//#include "odometry.h"
-
 // declaration des prototypes de fonction
 // ces declarations sont necessaires pour remplir le tableau commands[] ci-dessous
 static void cmd_mem(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 static void cmd_threads(BaseSequentialStream *lchp, int argc,const char* const argv[]);
-static void cmd_rtc(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 static void cmd_uid(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 static void cmd_param(BaseSequentialStream *lchp, int argc,const char* const argv[]);
-static void cmd_encoders(BaseSequentialStream *lchp, int argc,const char* const argv[]);
-static void cmd_motors(BaseSequentialStream *lchp, int argc,const char* const argv[]);
-static void cmd_pos(BaseSequentialStream *lchp, int argc,const char* const argv[]);
-//static void cmd_speed(BaseSequentialStream *lchp, int argc,const char* const argv[]);
-//static void cmd_pid(BaseSequentialStream *lchp, int argc,const char* const argv[]);
-static void cmd_help(BaseSequentialStream *lchp, int argc,const char* const argv[]);
 
 static const ShellCommand commands[] = {
   {"mem", cmd_mem},		// affiche la mémoire libre/occupée
   {"threads", cmd_threads},	// affiche pour chaque thread le taux d'utilisation de la pile et du CPU
-  {"rtc", cmd_rtc},		// affiche l'heure contenue par la RTC
   {"uid", cmd_uid},		// affiche le numéri d'identification unique du MCU
   {"param", cmd_param},		// fonction à but pedagogique qui affiche les
 				//   paramètres qui lui sont passés
-  {"enc", cmd_encoders},	// affiche position des encoders
-  {"mot", cmd_motors},	// donne une consigne moteur
-  {"pos", cmd_pos},	// affiche position
-  //{"speed", cmd_speed},	// donne une consigne de vitesse
-  //{"pid", cmd_pid},	// set PID gains
-  {"help", cmd_help},
   {NULL, NULL}			// marqueur de fin de tableau
 };
 
@@ -80,90 +63,6 @@ static void cmd_param(BaseSequentialStream *lchp, int argc,const char* const arg
   }
 }
 
-static void cmd_motors(BaseSequentialStream *lchp, int argc,const char* const argv[])
-{
-  if (argc < 2) {  // si aucun paramètre n'a été passé à la commande param 
-    chprintf (lchp, "Usage: mot <motor no> <speed>\r\n");
-  } else { // sinon (un ou plusieurs pararamètres passés à la commande param 
-      int motor_no = atoi (argv[0]);
-      float speed = atof (argv[1]);
-      
-      if(motor_no >= 1 && motor_no <= 3 && speed >= -100.0 && speed <= 100.0) {
-        switch(motor_no) {
-          case 1:
-            setmot1(speed);
-            break;
-          case 2:
-            setmot2(speed);
-            break;
-          case 3:
-            setmot3(speed);
-            break;
-        }
-      } else {
-        chprintf (lchp, "motor_no must be between 1 and 3, and speed between 0 and 1\r\n");
-        chprintf (lchp, "s >= -100.0 : %d \t s <= 10.0 : %d \r\n", speed >= -1.0, speed <= 1.0);
-      }
-  }
-}
-
-// static void cmd_speed(BaseSequentialStream *lchp, int argc,const char* const argv[])
-// {
-//   if (argc < 3) {  // si aucun paramètre n'a été passé à la commande param 
-//     chprintf (lchp, "Usage: mot <vx> <vy> <vtheta>\r\n");
-//   } else { // sinon (un ou plusieurs pararamètres passés à la commande param 
-//       float vx = atof (argv[0]);
-//       float vy = atof (argv[1]);
-//       float vtheta = atof (argv[2]);
-      
-//       set_speed_setPoint(vx, vy, vtheta);
-//   }
-// }
-
-static void cmd_encoders(BaseSequentialStream *lchp, int argc,const char* const argv[])
-{
-  (void)argc;
-  (void)argv;
-  // int32_t enc1 = get_delta_enc1();
-  // int32_t enc2 = get_delta_enc2();
-  // int32_t enc3 = get_delta_enc3();
-  // int32_t enc4 = get_delta_enc4();
-  if (argc == 0) {   
-    //chprintf (lchp, "%ld\t%ld\t%ld\t%ld\r\n", enc1, enc2, enc3, enc4);
-    chprintf (lchp, "out of order\r\n");
-  }
-}
-
-
-static void cmd_pos(BaseSequentialStream *lchp, int argc,const char* const argv[])
-{
-  (void)argc;
-  (void)argv;
-  // if (argc == 0) {   
-  //   chprintf (lchp, "%f\t%f\t%f\r\n", get_x(), get_y(), get_theta());
-  // }
-}
-
-// static void cmd_pid(BaseSequentialStream *lchp, int argc,const char* const argv[])
-// {
-//   if (argc < 3) {  // si aucun paramètre n'a été passé à la commande param 
-//     chprintf (lchp, "Usage: pid <feedforward> <kp> <ki> <kd>\r\n");
-//   } else { // sinon (un ou plusieurs pararamètres passés à la commande param 
-//       float feedforward = atof (argv[0]);
-//       float kp = atof (argv[1]);
-//       float ki = atof (argv[2]);
-//       float kd = atof (argv[3]);
-      
-//       set_pid_gains(0, feedforward, kp, ki, kd);
-//   }
-// }
-
-static void cmd_help(BaseSequentialStream *lchp, int argc,const char* const argv[])
-{
-  (void)argc;
-  (void)argv;
-  chprintf (lchp, "TODO! But here are some commands: enc, mot, pos, speed, pid\r\nmem, threads, rtc, uid\r\n");
-}
 
 /*
   
@@ -182,7 +81,7 @@ static void cmd_help(BaseSequentialStream *lchp, int argc,const char* const argv
 #define SHELL_WA_SIZE   THD_WORKING_AREA_SIZE(4096)
 
 #if CONSOLE_DEV_USB == 0
-static const SerialConfig ftdiConfig =  {
+static const SerialConfig terminalConfig =  {
   115200,
   0,
   USART_CR2_STOP1_BITS | USART_CR2_LINEN,
@@ -196,17 +95,31 @@ typedef struct _ThreadCpuInfo {
   float    ticks[MAX_CPU_INFO_ENTRIES];
   float    cpu[MAX_CPU_INFO_ENTRIES];
   float    totalTicks;
+  float    totalISRTicks;
 } ThreadCpuInfo ;
 
+#if CH_DBG_THREADS_PROFILING | CH_DBG_STATISTICS
 static void stampThreadCpuInfo (ThreadCpuInfo *ti);
 static float stampThreadGetCpuPercent (const ThreadCpuInfo *ti, const uint32_t idx);
+static float stampISRGetCpuPercent (const ThreadCpuInfo *ti);
+#endif
 
-static void cmd_uid(BaseSequentialStream *lchp, int argc,const char* const argv[]) {
+static void cmd_uid(BaseSequentialStream *lchp, int argc, const char* const argv[]) {
   (void)argv;
   if (argc > 0) {
     chprintf (lchp, "Usage: uid\r\n");
     return;
   }
+
+  /* for (uint32_t i=0; i<2000; i++) { */
+  /*   bkpram[i] = (uint16_t) i; */
+  /* } */
+  
+  /* for (uint32_t i=0; i<2000; i++) { */
+  /*   if (bkpram[i] != (uint16_t) i) { */
+  /*     DebugTrace ("bkpram error"); */
+  /*   } */
+  /* } */
 
   chprintf (lchp, "uniq id : ");
   for (uint32_t i=0; i< UniqProcessorIdLen; i++)
@@ -214,96 +127,15 @@ static void cmd_uid(BaseSequentialStream *lchp, int argc,const char* const argv[
   chprintf (lchp, "\r\n");
 }
 
-static void cmd_rtc(BaseSequentialStream *lchp, int argc,const char* const argv[])
-{
-  if ((argc != 0) && (argc != 2) && (argc != 6)) {
-     DebugTrace ("Usage: rtc [Hour Minute Second Year monTh Day day_of_Week Adjust] value or");
-     DebugTrace ("Usage: rtc  Hour Minute Second Year monTh Day");
-     return;
-  }
- 
-  if (argc == 2) {
-    const char timeVar = (char) tolower ((int) *(argv[0]));
-    const int32_t varVal = strtol (argv[1], NULL, 10);
-    
-    switch (timeVar) {
-    case 'h':
-      setHour ((uint32_t)(varVal));
-      break;
-      
-    case 'm':
-       setMinute ((uint32_t)(varVal));
-      break;
-      
-    case 's':
-      setSecond ((uint32_t)(varVal));
-      break;
-      
-    case 'y':
-       setYear ((uint32_t)(varVal));
-      break;
-      
-    case 't':
-       setMonth ((uint32_t)(varVal));
-      break;
-      
-    case 'd':
-       setMonthDay ((uint32_t)(varVal));
-      break;
 
-    case 'w':
-       setWeekDay ((uint32_t)(varVal));
-      break;
-
-    case 'a':
-      {
-	int32_t newSec =(int)(getSecond()) + varVal;
-	if (newSec > 59) {
-	  int32_t newMin =(int)(getMinute()) + (newSec/60);
-	  if (newMin > 59) {
-	    setHour ((getHour()+((uint32_t)(newMin/60))) % 24);
-	    newMin %= 60;
-	  }
-	  setMinute ((uint32_t)newMin);
-	}
-	if (newSec < 0) {
-	  int32_t newMin =(int)getMinute() + (newSec/60)-1;
-	  if (newMin < 0) {
-	    setHour ((getHour()-((uint32_t)newMin/60)-1) % 24);
-	    newMin %= 60;
-	  }
-	  setMinute ((uint32_t)newMin);
-	}
-	setSecond ((uint32_t)newSec % 60);
-      }
-      break;
-      
-    default:
-      DebugTrace ("Usage: rtc [Hour Minute Second Year monTh Day Weekday Adjust] value");
-    }
-  } else if (argc == 6) {
-    setYear ((uint32_t) atoi(argv[3]));
-    setMonth ((uint32_t) atoi(argv[4]));
-    setMonthDay ((uint32_t) atoi(argv[5]));
-    setHour ((uint32_t) atoi(argv[0]));
-    setMinute ((uint32_t) atoi(argv[1]));
-    setSecond ((uint32_t) atoi(argv[2]));
-  }
-
-  chprintf (lchp, "RTC : %s %.02lu/%.02lu/%.04lu  %.02lu:%.02lu:%.02lu\r\n",
-	    getWeekDayAscii(), getMonthDay(), getMonth(), getYear(),
-	    getHour(), getMinute(), getSecond());
-}
-
-
-static void cmd_mem(BaseSequentialStream *lchp, int argc,const char* const argv[]) {
+static void cmd_mem(BaseSequentialStream *lchp, int argc,const char * const argv[]) {
   (void)argv;
   if (argc > 0) {
     chprintf (lchp, "Usage: mem\r\n");
     return;
   }
 
-  chprintf (lchp, "core free memory : %u bytes\r\n", chCoreStatus());
+  chprintf (lchp, "core free memory : %u bytes\r\n", chCoreGetStatusX());
   chprintf (lchp, "heap free memory : %u bytes\r\n", getHeapFree());
 
   void * ptr1 = malloc_m (100);
@@ -319,9 +151,10 @@ static void cmd_mem(BaseSequentialStream *lchp, int argc,const char* const argv[
 
 
 
-static void cmd_threads(BaseSequentialStream *lchp, int argc,const char* const argv[]) {
-  static const char *states[] = {THD_STATE_NAMES};
-  Thread *tp = chRegFirstThread();
+#if CH_DBG_THREADS_PROFILING | CH_DBG_STATISTICS
+static void cmd_threads(BaseSequentialStream *lchp, int argc,const char * const argv[]) {
+  static const char *states[] = {CH_STATE_NAMES};
+  thread_t *tp = chRegFirstThread();
   (void)argv;
   (void)argc;
   float totalTicks=0;
@@ -338,25 +171,60 @@ static void cmd_threads(BaseSequentialStream *lchp, int argc,const char* const a
   chprintf (lchp, "    addr    stack  frestk prio refs  state        time \t percent        name\r\n");
   uint32_t idx=0;
   do {
-    chprintf (lchp, "%.8lx %.8lx %6lu %4lu %4lu %9s %9lu   %.1f    \t%s\r\n",
+    chprintf (lchp, "%.8lx %.8lx %6lu %4lu %4lu %9s %9lu   %.2f%%    \t%s\r\n",
 	      (uint32_t)tp, (uint32_t)tp->ctx.sp,
 	      get_stack_free (tp),
-	      (uint32_t)tp->prio, (uint32_t)(tp->refs - 1),
-	      states[tp->state], (uint32_t)tp->time, 
+	      (uint32_t)tp->hdr.pqueue.prio, (uint32_t)(tp->refs - 1),
+	      states[tp->state],
+#if CH_DBG_THREADS_PROFILING
+	      (uint32_t)tp->time,
+#elif CH_DBG_STATISTICS
+	      (uint32_t)RTC2MS(STM32_SYSCLK, tp->stats.cumulative),
+#endif
 	      stampThreadGetCpuPercent (&threadCpuInfo, idx),
-	      chRegGetThreadName(tp));
+	      chRegGetThreadNameX(tp));
+#if CH_DBG_THREADS_PROFILING
     totalTicks+= (float) tp->time;
-    if (strcmp (chRegGetThreadName(tp), "idle") == 0)
-      idleTicks =  (float) tp->time;
-    tp = chRegNextThread ((Thread *)tp);
+#elif CH_DBG_STATISTICS
+    totalTicks+= (float)tp->stats.cumulative;
+#endif
+    if (strcmp(chRegGetThreadNameX(tp), "idle") == 0)
+#if CH_DBG_THREADS_PROFILING
+    idleTicks =  (float) tp->time;
+#elif CH_DBG_STATISTICS
+    idleTicks = (float)tp->stats.cumulative;
+#endif
+    tp = chRegNextThread ((thread_t *)tp);
     idx++;
   } while (tp != NULL);
 
   const float idlePercent = (idleTicks*100.f)/totalTicks;
   const float cpuPercent = 100.f - idlePercent;
+  chprintf (lchp, "Interrupt Service Routine \t\t     %9lu   %.2f%%    \tISR\r\n",
+	    (uint32_t)RTC2MS(STM32_SYSCLK,threadCpuInfo.totalISRTicks),
+	    stampISRGetCpuPercent(&threadCpuInfo));
   chprintf (lchp, "\r\ncpu load = %.2f%%\r\n", cpuPercent);
 }
+#else
+static void cmd_threads(BaseSequentialStream *lchp, int argc,const char * const argv[]) {
+  static const char *states[] = {CH_STATE_NAMES};
+  thread_t *tp = chRegFirstThread();
+  (void)argv;
+  (void)argc;
 
+  
+  chprintf (lchp, "    addr    stack  frestk prio refs  state                name\r\n");
+  do {
+    chprintf (lchp, "%.8lx %.8lx %6lu %4lu %4lu %9s \t%s\r\n",
+	      (uint32_t)tp, (uint32_t)tp->ctx.sp,
+	      get_stack_free (tp),
+	      (uint32_t)tp->hdr.pqueue.prio, (uint32_t)(tp->refs - 1),
+	      states[tp->state], chRegGetThreadNameX(tp));
+    tp = chRegNextThread ((thread_t *)tp);
+  } while (tp != NULL);
+}
+
+#endif
 
 static const ShellConfig shell_cfg1 = {
 #if CONSOLE_DEV_USB == 0
@@ -377,10 +245,10 @@ void consoleInit (void)
    */
 
 #if CONSOLE_DEV_USB != 0
-  usbSerialInit(&SDU1, &USBD1);
+  usbSerialInit(&SDU1, &USBD1); 
   chp = (BaseSequentialStream *) &SDU1;
 #else
-  sdStart(&CONSOLE_DEV_SD, &ftdiConfig);
+  sdStart(&CONSOLE_DEV_SD, &terminalConfig);
   chp = (BaseSequentialStream *) &CONSOLE_DEV_SD;
 #endif
   /*
@@ -392,61 +260,53 @@ void consoleInit (void)
 
 void consoleLaunch (void)
 {
-  Thread *shelltp = NULL;
+  thread_t *shelltp = NULL;
 
  
 #if CONSOLE_DEV_USB != 0
-   while (TRUE) {
-    if (!shelltp) {
-      systime_t time=90;
-
-
-      while (usbGetDriver()->state != USB_ACTIVE) {
-	if (time != 100) {
-	  time++;
-	  chThdSleepMilliseconds(100);
-	} else {
-	  time=90;
-	  //usbSerialReset(&SDU1);
-	}
-      }
-      
-      // activate driver, giovani workaround
-      chnGetTimeout(&SDU1, TIME_IMMEDIATE);
-      while (!isUsbConnected()) {
+  if (!shelltp) {
+    systime_t time=90;
+    
+    
+    while (usbGetDriver()->state != USB_ACTIVE) {
+      if (time != 100) {
+	time++;
 	chThdSleepMilliseconds(100);
+      } else {
+	time=90;
+	//usbSerialReset(&SDU1);
       }
-      
-      shelltp = shellCreate(&shell_cfg1, SHELL_WA_SIZE, NORMALPRIO);
-    } else if (shelltp && (chThdTerminated(shelltp))) {
-      chThdRelease(shelltp);    /* Recovers memory of the previous shell.   */
-      shelltp = NULL;           /* Triggers spawning of a new shell.        */
     }
-    chThdSleepMilliseconds(100);
-  }
+    
+    // activate driver, giovani workaround
+    chnGetTimeout(&SDU1, TIME_IMMEDIATE);
+    while (!isUsbConnected()) {
+      chThdSleepMilliseconds(100);
+    }
+    
+    shelltp = shellCreate(&shell_cfg1, SHELL_WA_SIZE, NORMALPRIO);
+  } 
+  chThdSleepMilliseconds(100);
 
 #else
 
-   while (TRUE) {
-     if (!shelltp) {
-       //       palSetPad (BOARD_LED3_P, BOARD_LED3);
-       shelltp = shellCreate(&shell_cfg1, SHELL_WA_SIZE, NORMALPRIO);
-     } else if (chThdTerminated(shelltp)) {
-       chThdRelease(shelltp);    /* Recovers memory of the previous shell.   */
-       shelltp = NULL;           /* Triggers spawning of a new shell.        */
-       //       palClearPad (BOARD_LED3_P, BOARD_LED3);
-     }
-     chThdSleepMilliseconds(100);
+   if (!shelltp) {
+     //       palSetPad (BOARD_LED3_P, BOARD_LED3);
+     shelltp = shellCreate(&shell_cfg1, SHELL_WA_SIZE, NORMALPRIO);
+   } else if (chThdTerminatedX(shelltp)) {
+     chThdRelease(shelltp);    /* Recovers memory of the previous shell.   */
+     shelltp = NULL;           /* Triggers spawning of a new shell.        */
+     //       palClearPad (BOARD_LED3_P, BOARD_LED3);
    }
-   
    
 #endif //CONSOLE_DEV_USB
 
 }
 
+#if CH_DBG_THREADS_PROFILING
 static void stampThreadCpuInfo (ThreadCpuInfo *ti)
 {
-  const Thread *tp =  chRegFirstThread();
+  const thread_t *tp =  chRegFirstThread();
   uint32_t idx=0;
   
   float totalTicks =0;
@@ -454,7 +314,7 @@ static void stampThreadCpuInfo (ThreadCpuInfo *ti)
     totalTicks+= (float) tp->time;
     ti->cpu[idx] = (float) tp->time - ti->ticks[idx];;
     ti->ticks[idx] = (float) tp->time;
-    tp = chRegNextThread ((Thread *)tp);
+    tp = chRegNextThread ((thread_t *)tp);
     idx++;
   } while ((tp != NULL) && (idx < MAX_CPU_INFO_ENTRIES));
   
@@ -465,11 +325,39 @@ static void stampThreadCpuInfo (ThreadCpuInfo *ti)
   idx=0;
   do {
     ti->cpu[idx] =  (ti->cpu[idx]*100.f)/diffTotal;
-    tp = chRegNextThread ((Thread *)tp);
+    tp = chRegNextThread ((thread_t *)tp);
     idx++;
   } while ((tp != NULL) && (idx < MAX_CPU_INFO_ENTRIES));
 }
 
+static float stampISRGetCpuPercent (const ThreadCpuInfo *ti)
+{
+  return -1.0f;
+}
+
+#elif CH_DBG_STATISTICS
+static void stampThreadCpuInfo (ThreadCpuInfo *ti)
+{
+  const thread_t *tp =  chRegFirstThread();
+  uint32_t idx=0;
+  
+  ti->totalTicks =0;
+  do {
+    ti->ticks[idx] = (float) tp->stats.cumulative;
+    ti->totalTicks += ti->ticks[idx];
+    tp = chRegNextThread ((thread_t *)tp);
+    idx++;
+  } while ((tp != NULL) && (idx < MAX_CPU_INFO_ENTRIES));
+  ti->totalISRTicks = currcore->kernel_stats.m_crit_isr.cumulative;
+  ti->totalTicks += ti->totalISRTicks;
+  tp =  chRegFirstThread();
+  idx=0;
+  do {
+    ti->cpu[idx] =  (ti->ticks[idx]*100.f) / ti->totalTicks;
+    tp = chRegNextThread ((thread_t *)tp);
+    idx++;
+  } while ((tp != NULL) && (idx < MAX_CPU_INFO_ENTRIES));
+}
 
 static float stampThreadGetCpuPercent (const ThreadCpuInfo *ti, const uint32_t idx)
 {
@@ -478,3 +366,9 @@ static float stampThreadGetCpuPercent (const ThreadCpuInfo *ti, const uint32_t i
 
   return ti->cpu[idx];
 }
+
+static float stampISRGetCpuPercent (const ThreadCpuInfo *ti)
+{
+  return ti->totalISRTicks * 100.0f / ti->totalTicks;
+}
+#endif

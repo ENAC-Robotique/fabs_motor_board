@@ -1,17 +1,20 @@
-#ifndef __TTY_CONSOLE_H__
-#define __TTY_CONSOLE_H__
+#pragma once
 
+#include <ch.h>
+#include <hal.h>
+#include "stdutil.h"
 
-// USB : 1, SERIAL : 0
-#define CONSOLE_DEV_USB 1
-
-#if CONSOLE_DEV_USB == 0
-#define CONSOLE_DEV_SD SD5
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 
 void consoleInit (void);
 void consoleLaunch (void);
 
+#define CONSOLE_DEV_USB TRUE
 
-#endif // __TTY_CONSOLE_H__
+#ifdef __cplusplus
+}
+#endif
+
