@@ -58,14 +58,24 @@ bool BytesReadBuffer::peek(uint8_t& byte) const
   return return_value;
 }
 
-void BytesReadBuffer::advance()
+bool BytesReadBuffer::advance()
 {
-  ++read_index_;
+  bool return_value = write_index_ > read_index_;
+  if(return_value)
+  {
+    ++read_index_;
+  }
+  return return_value;
 }
 
-void BytesReadBuffer::advance(const uint32_t N)
+bool BytesReadBuffer::advance(const uint32_t N)
 {
-  read_index_ += N;
+  bool return_value = write_index_ >= (read_index_ + N);
+  if(return_value)
+  {
+    read_index_ += N;
+  }
+  return return_value;
 }
 
 bool BytesReadBuffer::pop(uint8_t& byte)
