@@ -6,8 +6,8 @@
 
 #define PERIOD_ODOM_REPORT 100  // ms
 
-constexpr double ROBOT_RADIUS = 113.0;
-constexpr double INC_PER_MM = 18.12;
+constexpr double ROBOT_RADIUS = 108.54341185440282;
+constexpr double INC_PER_MM = 17.753023791070714;
 
 
 extern const Eigen::Matrix<float, 3, 3> D;
