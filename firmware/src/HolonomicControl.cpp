@@ -24,9 +24,9 @@ extern "C" {
 
 
 /*
- *  |v1|   |-sin(O1)  cos(O1)  1|   |vx|
- *  |v2| = |-sin(O2)  cos(O2)  1| . |vy|
- *  |v3|   |-sin(O3)  cos(O3)  1|   |Rw|
+ *  |v1|   |-sin(O1)  cos(O1)  R|   |vx|
+ *  |v2| = |-sin(O2)  cos(O2)  R| . |vy|
+ *  |v3|   |-sin(O3)  cos(O3)  R|   |w|
  *
  *    m  =           D            .   v
  */
@@ -166,7 +166,7 @@ void HolonomicControl::speed_control(OdometryHolo* odometry)
     setMot2(m_cmds[1]);
     setMot3(m_cmds[2]);
 
-    sendMotorReport(m_cmds[0], m_cmds[1], m_cmds[2]);
+    //sendMotorReport(m_cmds[0], m_cmds[1], m_cmds[2]);
 
     _speed_prev_error = speed_error;
 
