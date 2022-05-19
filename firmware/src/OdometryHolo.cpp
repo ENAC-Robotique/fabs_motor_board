@@ -22,9 +22,11 @@ constexpr double THETA1 = 0;
 constexpr double THETA2 = -2.0*M_PI/3.0;
 constexpr double THETA3 = 2.0*M_PI/3.0;
 
+const double F = 0.8750322081937646;
+
 // Euclidean speeds into motor speeds: m = Dv
 const Eigen::Matrix<float, 3, 3> D {
-  {-sin(THETA1), cos(THETA1), ROBOT_RADIUS},
+  {-sin(THETA1)*F, cos(THETA1)*F, ROBOT_RADIUS*F},
   {-sin(THETA2), cos(THETA2), ROBOT_RADIUS},
   {-sin(THETA3), cos(THETA3), ROBOT_RADIUS}
 };
