@@ -3,6 +3,7 @@
 #include "ch.h"
 #include <Eigen/Core>
 #include "high_gain_filter.h"
+#include "encoders.h"
 
 #define MOTORS_NB 3
 #define PERIOD_ODOM_REPORT 100  // ms
@@ -16,6 +17,7 @@ extern const Eigen::Matrix<double, 3, 3> D;
 
 class OdometryHolo {
 public:
+    //OdometryHolo() {}
     void init();
 
     void set_pos(double x, double y, double theta);
@@ -30,12 +32,13 @@ public:
      */
     Eigen::Vector3d get_speed() {return _speed_r;}
 
-    void update(double elapsed);
+    void update();
 
 private:
     msg_t sendOdomReport();
 
-    high_gain_filter pos_filters[MOTORS_NB];
+    HighGainFilter pos_filters[MOTORS_NB];
+    double prev_pos[MOTORS_NB];
 
     Eigen::Vector3d _position;
     Eigen::Vector3d _speed_r;

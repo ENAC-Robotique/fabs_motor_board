@@ -44,22 +44,20 @@ constexpr float POS_ALPHA1 = 2.08f;
 constexpr float POS_ALPHA2 = 0.64f;
 constexpr float POS_EPS = 0.04f; // 0.02
 
-float alphas[] = {POS_ALPHA0, POS_ALPHA1, POS_ALPHA2};
+std::array<double, 3> alphas = {POS_ALPHA0, POS_ALPHA1, POS_ALPHA2};
 
 
 
 void OdometryHolo::init() {
-  initEnc1(true);
-  initEnc2(true);
-  initEnc3(true);
-  //initEnc4(true);
-
-
-  for(int i=0; i<3; i++) {
-    high_gain_filter_init(&pos_filters[0], alphas, POS_EPS, 40);
-  }
+  enc1.init(true);
+  enc2.init(true);
+  enc3.init(true);
+  //enc4.init(true);
   
-
+  for(int i=0; i<3; i++) {
+    pos_filters[i].init(alphas, POS_EPS, 40);
+    prev_pos[i] = pos_filters[i].get_pos();
+  }
 
   _position = {0, 0, 0};
   _speed_r = {0, 0, 0};
@@ -79,22 +77,38 @@ void OdometryHolo::set_pos(double x, double y, double theta) {
   _position = {x, y, theta};
 }
 
-void OdometryHolo::update(double elapsed) {
-  static systime_t lastOdomReportTime = 0;
+void OdometryHolo::update() {
+
+  // TODO update filter at higher rate
+
+  // static systime_t lastOdomReportTime = 0;
+
+  chSysLock();
+  double pos0 = pos_filters[0].get_pos();
+  double pos1 = pos_filters[1].get_pos();
+  double pos2 = pos_filters[2].get_pos();
+  double speed0 = pos_filters[0].get_speed();
+  double speed1 = pos_filters[1].get_speed();
+  double speed2 = pos_filters[2].get_speed();
+  chSysUnlock();
 
   // get encoders increments
   Eigen::Vector3d motors_deltas = {
-    static_cast<float>(get_delta_enc1()),
-    static_cast<float>(get_delta_enc2()),
-    static_cast<float>(get_delta_enc3())
+    pos0 - prev_pos[0],
+    pos1 - prev_pos[1],
+    pos2 - prev_pos[2],
   };
 
-  // motors move in mm
-  Eigen::Vector3d motors_move = motors_deltas / INC_PER_MM;
-  
+  Eigen::Vector3d motors_speeds = {
+    speed0,
+    speed1,
+    speed2,
+  };
+
   // robot move in robot frame
-  Eigen::Vector3d robot_move_r = Dinv * motors_move;
-  _speed_r = robot_move_r / elapsed;
+  Eigen::Vector3d robot_move_r = Dinv * (motors_deltas / INC_PER_MM);
+
+  _speed_r = Dinv * (motors_speeds / INC_PER_MM);
 
   // hypothesis: the movement is approximated as a straight line at heading [ oldTheta + dTheta/2 ]
   double theta_mean = _position[2] + robot_move_r[2]/2;
@@ -113,10 +127,10 @@ void OdometryHolo::update(double elapsed) {
 
   _position(2) = center_radians(_position(2));
 
-  if(chVTTimeElapsedSinceX(lastOdomReportTime) > chTimeMS2I(PERIOD_ODOM_REPORT)) {
-    sendOdomReport();
-    lastOdomReportTime = chVTGetSystemTime();
-  }
+  // if(chVTTimeElapsedSinceX(lastOdomReportTime) > chTimeMS2I(PERIOD_ODOM_REPORT)) {
+  //   sendOdomReport();
+  //   lastOdomReportTime = chVTGetSystemTime();
+  // }
 }
 
 msg_t OdometryHolo::sendOdomReport() {

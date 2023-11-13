@@ -25,34 +25,55 @@
 #pragma once
 
 #include <math.h>
+#include <array>
 
 
 /**
  *  filter struct
  */
-struct high_gain_filter {
+class HighGainFilter {
+public:
 
+  /** Init all matrix and vectors to the right value
+   *
+   * @param filter pointer to a filter structure
+   * @param alpha 
+   * @param epsilon high gain
+   * @param rate data update rate
+   * @param init_val_theta
+   * @param init_val_theta_dot
+   */
+  void init(std::array<double, 3> alpha, double epsilon, double rate);
+  void process(double theta);
+
+  void reset(std::array<double, 3> hatx={0, 0, 0},
+             std::array<double, 3> hatx_dot_prev={0, 0, 0}){
+  this->hatx = hatx;
+  this->hatx_dot_prev = hatx_dot_prev;
+}
+
+  void update_alpha0(double alpha0){ alpha[0] = alpha0; }
+  void update_alpha1(double alpha1){ alpha[1] = alpha1; }
+  void update_alpha2(double alpha2){ alpha[2] = alpha2; }
+  void update_epsilon(double epsilon){ this->epsilon = epsilon; }
+  void update_rate(double rate){ this->rate = rate; }
+
+  double get_pos(){ return hatx[0];};
+  double get_speed(){ return hatx[1];};
+
+
+private:
   //states
-  float hatx[3];  // state 
-  float hatx_dot_prev[3]; // previous state
+  std::array<double, 3> hatx;  // state 
+  std::array<double, 3> hatx_dot_prev; // previous state
 
   //parameters
-  float alpha[3];
+  std::array<double, 3> alpha;
   float epsilon;                     //
   float rate;                     ///< data update rate (in Hz)
 
 };
 
-/** Init all matrix and vectors to the right value
- *
- * @param filter pointer to a filter structure
- * @param alpha 
- * @param epsilon high gain
- * @param rate data update rate
- * @param init_val_theta
- * @param init_val_theta_dot
- */
-extern void high_gain_filter_init(struct high_gain_filter *filter, float *alpha, float epsilon, float rate);
 
 /** Process step
  *
@@ -68,8 +89,3 @@ extern void high_gain_filter_process(struct high_gain_filter *filter, float thet
  * settings handlers
  */
 extern void high_gain_filter_reset(struct high_gain_filter *filter);
-extern void high_gain_filter_update_alpha0(struct high_gain_filter *filter, float alpha0);
-extern void high_gain_filter_update_alpha1(struct high_gain_filter *filter, float alpha1);
-extern void high_gain_filter_update_alpha2(struct high_gain_filter *filter, float alpha2);
-extern void high_gain_filter_update_epsilon(struct high_gain_filter *filter, float epsilon);
-extern void high_gain_filter_update_rate(struct high_gain_filter *filter, float rate);

@@ -49,7 +49,7 @@ int main (void)
 
   halInit();
   chSysInit();
-  initHeap();		// initialisation du "tas" pour permettre l'allocation mémoire dynamique 
+  initHeap();		// initialisation du "tas" pour permettre l'allocation mémoire dynamique
 
   comm_init();
   consoleInit();	// initialisation des objets liés au shell

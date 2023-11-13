@@ -157,8 +157,7 @@ CSRC = $(ALLCSRC) \
        $(VARIOUS)/microrl/microrlShell.c \
        $(VARIOUS)/microrl/microrl.c \
        $(VARIOUS)/usb_serial.c \
-       src/ttyConsole.c \
-       src/globalVar.c
+       src/ttyConsole.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -171,12 +170,14 @@ CPPSRC = $(ALLCPPSRC) \
           src/OdometryHolo.cpp \
           src/speed_control.cpp \
           src/HolonomicControl.cpp \
-          src/DifferentialControl.cpp \
           src/encoders.cpp \
           src/utils.cpp \
-          src/OdometryDiff.cpp \
           src/main.cpp \
-          src/high_gain_filter.cpp
+          src/high_gain_filter.cpp \
+          src/globalVar.cpp
+
+# src/OdometryDiff.cpp \
+# src/DifferentialControl.cpp \
 
 CPPSRC += $(EMBEDDED_PROTO_SRC)
 
