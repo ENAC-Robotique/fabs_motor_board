@@ -43,10 +43,18 @@ static void holo_speed_control(void* arg) {
   odometry.init();
   speed_ctrl.init();
   // speed_ctrl.set_pid_gains(0, 0.14, 0.2, 0.1, 0);
+  systime_t prev = chVTGetSystemTime();
+  chThdSleepUntil(chTimeAddX(prev, chTimeMS2I(CONTROL_PERIOD)));
+
   while (true)
   {
-    speed_ctrl.speed_control(&odometry);
-    chThdSleepMilliseconds(1);
+    systime_t now = chVTGetSystemTime();
+    time_msecs_t elapsed_ms = chTimeI2MS(chVTTimeElapsedSinceX(prev));
+    double elapsed_s = elapsed_ms/1000.0;
+    odometry.update(elapsed_s);
+
+    //speed_ctrl.speed_control(&odometry);
+    chThdSleepUntil(chTimeAddX(now, chTimeMS2I(CONTROL_PERIOD)));
   }
 }
 

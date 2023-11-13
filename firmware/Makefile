@@ -175,7 +175,8 @@ CPPSRC = $(ALLCPPSRC) \
           src/encoders.cpp \
           src/utils.cpp \
           src/OdometryDiff.cpp \
-          src/main.cpp
+          src/main.cpp \
+          src/high_gain_filter.cpp
 
 CPPSRC += $(EMBEDDED_PROTO_SRC)
 

@@ -11,8 +11,9 @@
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "bmp",
-            "BMPGDBSerialPort": "/dev/bmp_gdb",
-            "gdbPath": "gdb-multiarch"
+            "BMPGDBSerialPort": "/dev/bmp-gdb",
+            "runToEntryPoint": "main"
+            //"gdbPath": "gdb-multiarch"
         },
         {
             "name": "Cortex Debug attach",
@@ -21,8 +22,8 @@
             "request": "attach",
             "type": "cortex-debug",
             "servertype": "bmp",
-            "BMPGDBSerialPort": "/dev/bmp_gdb",
-            "gdbPath": "gdb-multiarch",
+            "BMPGDBSerialPort": "/dev/bmp-gdb",
+            //"gdbPath": "gdb-multiarch",
             "svdFile": "${workspaceFolder}/STM32F767.svd"
             //"showDevDebugOutput": true
         }

@@ -7,6 +7,9 @@
 #include <cmath>
 #include <Eigen/LU>
 
+#include "globalVar.h"
+#include "stdutil.h"
+
 /*
  *  |v1|   |-sin(O1)  cos(O1)  1|   |vx|
  *  |v2| = |-sin(O2)  cos(O2)  1| . |vy|
@@ -25,14 +28,25 @@ constexpr double THETA3 = 2.0*M_PI/3.0;
 const double F = 0.8750322081937646;
 
 // Euclidean speeds into motor speeds: m = Dv
-const Eigen::Matrix<float, 3, 3> D {
+const Eigen::Matrix<double, 3, 3> D {
   {-sin(THETA1)*F, cos(THETA1)*F, ROBOT_RADIUS*F},
   {-sin(THETA2), cos(THETA2), ROBOT_RADIUS},
   {-sin(THETA3), cos(THETA3), ROBOT_RADIUS}
 };
 
 //motor speeds into Euclidean speeds: v = Dinv m
-const Eigen::Matrix<float, 3, 3> Dinv = D.inverse();
+const Eigen::Matrix<double, 3, 3> Dinv = D.inverse();
+
+
+
+constexpr float POS_ALPHA0 = 2.4f;
+constexpr float POS_ALPHA1 = 2.08f;
+constexpr float POS_ALPHA2 = 0.64f;
+constexpr float POS_EPS = 0.04f; // 0.02
+
+float alphas[] = {POS_ALPHA0, POS_ALPHA1, POS_ALPHA2};
+
+
 
 void OdometryHolo::init() {
   initEnc1(true);
@@ -40,18 +54,25 @@ void OdometryHolo::init() {
   initEnc3(true);
   //initEnc4(true);
 
+
+  for(int i=0; i<3; i++) {
+    high_gain_filter_init(&pos_filters[0], alphas, POS_EPS, 40);
+  }
+  
+
+
   _position = {0, 0, 0};
   _speed_r = {0, 0, 0};
 
-  auto cb_recalage = [this](Message& msg) {
-      if(msg.has_pos() && msg.msg_type() == Message::MsgType::COMMAND) {
-        double x = msg.pos().get_x();
-        double y = msg.pos().get_y();
-        double theta = msg.pos().get_theta();
-        set_pos(x, y, theta);
-    }
-  };
-  register_callback(cb_recalage);
+  // auto cb_recalage = [this](Message& msg) {
+  //     if(msg.has_pos() && msg.msg_type() == Message::MsgType::COMMAND) {
+  //       double x = msg.pos().get_x();
+  //       double y = msg.pos().get_y();
+  //       double theta = msg.pos().get_theta();
+  //       set_pos(x, y, theta);
+  //   }
+  // };
+  // register_callback(cb_recalage);
 }
 
 void OdometryHolo::set_pos(double x, double y, double theta) {
@@ -62,31 +83,31 @@ void OdometryHolo::update(double elapsed) {
   static systime_t lastOdomReportTime = 0;
 
   // get encoders increments
-  Eigen::Vector3f motors_deltas = {
+  Eigen::Vector3d motors_deltas = {
     static_cast<float>(get_delta_enc1()),
     static_cast<float>(get_delta_enc2()),
     static_cast<float>(get_delta_enc3())
   };
 
   // motors move in mm
-  Eigen::Vector3f motors_move = motors_deltas / INC_PER_MM;
+  Eigen::Vector3d motors_move = motors_deltas / INC_PER_MM;
   
   // robot move in robot frame
-  Eigen::Vector3f robot_move_r = Dinv * motors_move;
+  Eigen::Vector3d robot_move_r = Dinv * motors_move;
   _speed_r = robot_move_r / elapsed;
 
   // hypothesis: the movement is approximated as a straight line at heading [ oldTheta + dTheta/2 ]
   double theta_mean = _position[2] + robot_move_r[2]/2;
 
   // rotation matrix from robot frame to table frame
-  const Eigen::Matrix<float, 3, 3> R {
+  const Eigen::Matrix<double, 3, 3> R {
     {cos(theta_mean), -sin(theta_mean), 0},
     {sin(theta_mean), cos(theta_mean) , 0},
     {0              , 0               , 1}
   };
 
   // change frame from robot frame to table frame
-  Eigen::Vector3f robot_move_table = R * robot_move_r;
+  Eigen::Vector3d robot_move_table = R * robot_move_r;
 
   _position += robot_move_table;
 
@@ -105,6 +126,8 @@ msg_t OdometryHolo::sendOdomReport() {
   pos_report.set_y(get_y());
   pos_report.set_theta(get_theta());
   msg_t ret = post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
+
+  chprintf ((BaseSequentialStream*)&SDU1, "%lf %lf %lf\r\n", get_x(), get_y(), get_theta());
 
   if(ret != MSG_OK) {
     return ret;

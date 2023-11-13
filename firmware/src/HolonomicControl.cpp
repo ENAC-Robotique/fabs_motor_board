@@ -36,7 +36,7 @@ extern "C" {
 
 using namespace protoduck;
 
-const Eigen::Vector3f ACCEL_MAX = {2000.0, 2000.0, 20.};
+const Eigen::Vector3d ACCEL_MAX = {2000.0, 2000.0, 20.};
 
 void HolonomicControl::init() {
 
@@ -145,36 +145,33 @@ void HolonomicControl::speed_control(OdometryHolo* odometry)
   }
 
   time_msecs_t elapsed_ms = chTimeI2MS(chVTTimeElapsedSinceX(control_time));
-  if(elapsed_ms > CONTROL_PERIOD) {
-    double elapsed_s = elapsed_ms/1000.0;
-    odometry->update(elapsed_s);
-    ramp_setpoint(elapsed_s);
+  double elapsed_s = elapsed_ms/1000.0;
+  ramp_setpoint(elapsed_s);
 
-    chMtxLock(&(mut_speed_set_point));
-    Eigen::Vector3f speed_error = _speed_setPoint - odometry->get_speed();
-    chMtxUnlock(&(mut_speed_set_point));
+  chMtxLock(&(mut_speed_set_point));
+  Eigen::Vector3d speed_error = _speed_setPoint - odometry->get_speed();
+  chMtxUnlock(&(mut_speed_set_point));
 
-    integrate_error(speed_error, elapsed_s);
+  integrate_error(speed_error, elapsed_s);
 
-    Eigen::Vector3f d_err = (speed_error - _speed_prev_error) / elapsed_s;
+  Eigen::Vector3d d_err = (speed_error - _speed_prev_error) / elapsed_s;
 
-    Eigen::Vector3f speed_cmd = _speed_setPoint * _ng + speed_error * _kp + _speed_integral_error * _ki + d_err * _kd;
+  Eigen::Vector3d speed_cmd = _speed_setPoint * _ng + speed_error * _kp + _speed_integral_error * _ki + d_err * _kd;
 
-    Eigen::Vector3f m_cmds = D * speed_cmd;
+  Eigen::Vector3d m_cmds = D * speed_cmd;
 
-    setMot1(m_cmds[0]);
-    setMot2(m_cmds[1]);
-    setMot3(m_cmds[2]);
+  setMot1(m_cmds[0]);
+  setMot2(m_cmds[1]);
+  setMot3(m_cmds[2]);
 
-    //sendMotorReport(m_cmds[0], m_cmds[1], m_cmds[2]);
+  //sendMotorReport(m_cmds[0], m_cmds[1], m_cmds[2]);
 
-    _speed_prev_error = speed_error;
+  _speed_prev_error = speed_error;
 
-    control_time = now;
-  }
+  control_time = now;
 }
 
-void HolonomicControl::integrate_error(Eigen::Vector3f error, double elapsed) {
+void HolonomicControl::integrate_error(Eigen::Vector3d error, double elapsed) {
   if(abs(_ki) < 0.001) {
     return;
   }
@@ -182,7 +179,7 @@ void HolonomicControl::integrate_error(Eigen::Vector3f error, double elapsed) {
   _speed_integral_error += error * elapsed;
   //chprintf ((BaseSequentialStream*)&SDU1, "int raw: %f, %f, %f\r\n", _speed_integral_error[0], _speed_integral_error[1], _speed_integral_error[2]);
 
-  Eigen::Vector3f cmd_i = D * (_speed_integral_error * _ki);
+  Eigen::Vector3d cmd_i = D * (_speed_integral_error * _ki);
   float factor = cmd_i.array().abs().maxCoeff() / 1.0;
   if(factor > 100.0) {
     _speed_integral_error /= factor;

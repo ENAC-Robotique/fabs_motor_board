@@ -25,9 +25,9 @@ public:
 private:
 
 void ramp_setpoint(double elapsed);
-void integrate_error(Eigen::Vector3f error, double elapsed);
+void integrate_error(Eigen::Vector3d error, double elapsed);
 
-Eigen::Vector3f m_maxs_cmd = {100.,  100.,  100.};
+Eigen::Vector3d m_maxs_cmd = {100.,  100.,  100.};
 
 float _ng; 
 float _kp;
@@ -37,10 +37,10 @@ float _kd;
 systime_t setpoint_time;
 systime_t control_time;
 
-Eigen::Vector3f _setpoint_target;
-Eigen::Vector3f _speed_setPoint;
-Eigen::Vector3f _speed_integral_error;
-Eigen::Vector3f _speed_prev_error;
+Eigen::Vector3d _setpoint_target;
+Eigen::Vector3d _speed_setPoint;
+Eigen::Vector3d _speed_integral_error;
+Eigen::Vector3d _speed_prev_error;
 
 MUTEX_DECL(mut_speed_set_point);
 };
