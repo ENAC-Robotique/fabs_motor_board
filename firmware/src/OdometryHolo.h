@@ -33,6 +33,7 @@ public:
     Eigen::Vector3d get_speed() {return _speed_r;}
 
     void update();
+    void update_filters();
 
 private:
     msg_t sendOdomReport();

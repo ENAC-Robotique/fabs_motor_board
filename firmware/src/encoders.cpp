@@ -6,7 +6,7 @@
 #include "stm32_tim.h"
 
 
-Encoder::Encoder(stm32_tim_t* tim): tim(tim), offset(0x7FFF), lower_half(true)
+Encoder::Encoder(stm32_tim_t* tim): tim(tim), offset(0), lower_half(true)
 {
 }
 
@@ -63,10 +63,10 @@ int32_t Encoder::get_value() {
   if(tim->SR & TIM_SR_UIF) {  //an overflow/underflow happend 
     if(counter_val <= 0x7FFF && !lower_half) {
       // the counter is in the lower half, and was previously in the upper half: overflow
-      offset += 0XFFFF;
+      offset += 1<<16;
     } else if(counter_val > 0x7FFF && lower_half) {
       // the counter is in the upper half, and was previously in the lower half: underflow
-      offset -= 0XFFFF;
+      offset -= 1<<16;
     }
     // if it's not one of the abover cases, an overflow/underflow happened,
     // but the counter did the opposite underflow/overflow,

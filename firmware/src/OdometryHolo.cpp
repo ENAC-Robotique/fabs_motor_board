@@ -133,6 +133,13 @@ void OdometryHolo::update() {
   // }
 }
 
+void OdometryHolo::update_filters()
+{
+  pos_filters[0].process(enc1.get_value());
+  pos_filters[1].process(enc2.get_value());
+  pos_filters[2].process(enc3.get_value());
+}
+
 msg_t OdometryHolo::sendOdomReport() {
   Message msg;
   auto& pos_report = msg.mutable_pos();
