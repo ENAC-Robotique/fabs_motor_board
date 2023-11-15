@@ -50,7 +50,7 @@ static void control_thd(void* arg) {
 
     // guidance TODO
     time_msecs_t t = chTimeI2MS(chTimeDiffX(start, now));
-    double speed_x = 0 * sin(0.1 * 6.28*t/1000.0);
+    double speed_x = 200 * sin(0.2 * 6.28*t/1000.0);
     speed_cons[0] = speed_x;
     pos_cons += speed_cons * CONTROL_PERIOD/1000.0;
     control.set_setPoints(pos_cons, speed_cons);
@@ -118,7 +118,16 @@ static msg_t sendMotorReport() {
     return post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
   };
 
-  // TODO send MOTORS_CONS
+  auto send_pos_cons= [=]() {
+    Message msg;
+    Eigen::Vector3d  pos_cons = control.get_pos_cons();
+    auto& msg_motors = msg.mutable_motors();
+    msg_motors.set_type(Motors::MotorDataType::MOTORS_POS_CONS);
+    msg_motors.set_m1(pos_cons[0]);
+    msg_motors.set_m2(pos_cons[1]);
+    msg_motors.set_m3(pos_cons[2]);
+    return post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
+  };
 
 
   msg_t ret;
@@ -131,6 +140,10 @@ static msg_t sendMotorReport() {
   }
 
   if((ret = send_cmds()) != MSG_OK) {
+    return ret;
+  }
+
+  if((ret = send_pos_cons()) != MSG_OK) {
     return ret;
   }
 }

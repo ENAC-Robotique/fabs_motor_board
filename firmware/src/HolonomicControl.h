@@ -18,6 +18,8 @@ public:
     void update();
 
     Eigen::Vector3d get_cmds() { return _cmds;}
+    Eigen::Vector3d get_pos_cons() { return _pos_cons;}
+    Eigen::Vector3d get_speed_cons() { return _speed_cons;}
 
 private:
 
