@@ -54,6 +54,7 @@ void HolonomicControl::init() {
   _pos_cons = {0, 0, 0};
   _speed_setPoint = {0, 0, 0};
   _speed_cons = {0, 0, 0};
+  _cmds = {0, 0, 0};
 
 
   for(int i=0; i<MOTORS_NB; i++) {
@@ -91,17 +92,6 @@ void HolonomicControl::init() {
 
   // register_callback(set_setpoint_cb);
   // register_callback(set_pid_gains_cb);
-}
-
-msg_t sendMotorReport(double m1, double m2, double m3) {
-  // Message msg;
-  // auto& motors_speed = msg.mutable_motors_speed();
-  // motors_speed.set_v1(m1);
-  // motors_speed.set_v2(m2);
-  // motors_speed.set_v3(m3);
-  // return post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
-  chprintf ((BaseSequentialStream*)&SDU1, "%lf %lf %lf\r\n", m1, m2, m3);
-  return MSG_OK;
 }
 
 
@@ -161,19 +151,11 @@ void HolonomicControl::update()
   Eigen::Vector3d pos_error = _pos_cons - motors_pos;
   Eigen::Vector3d speed_error = _speed_cons - motors_speed;
 
-  double cmds[MOTORS_NB];
-
   for(int i=0; i<MOTORS_NB; i++) {
-    cmds[i] = pids[i].update(pos_error[i], speed_error[i]);
+    _cmds[i] = pids[i].update(pos_error[i], speed_error[i]);
   }
   
-  mot1.set_cmd(cmds[0]);
-  mot2.set_cmd(cmds[1]);
-  mot3.set_cmd(cmds[2]);
-
-  //sendMotorReport(m_cmds[0], m_cmds[1], m_cmds[2]);
-  if(chVTTimeElapsedSinceX(lastControlReportTime) > chTimeMS2I(PERIOD_CONTROL_REPORT)) {
-    sendMotorReport(cmds[0], cmds[1], cmds[2]);
-    lastControlReportTime = chVTGetSystemTime();
-  }
+  mot1.set_cmd(_cmds[0]);
+  mot2.set_cmd(_cmds[1]);
+  mot3.set_cmd(_cmds[2]);
 }

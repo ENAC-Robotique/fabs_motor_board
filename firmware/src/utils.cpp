@@ -33,7 +33,6 @@ msg_t post_message(Message& msg, Message::MsgType msg_type, sysinterval_t timeou
     return ret;
   }
 
-  msg.set_source(Message::Agent::DIFF);
   msg.set_msg_type(msg_type);
   msg.serialize(*buffer);
   // post the new message for the communication thread. no timeout.

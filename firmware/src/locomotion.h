@@ -8,7 +8,7 @@ extern "C" {
 
 #include <inttypes.h>
 
-void start_state_estimation(void);
+void start_locomotion(void);
 
 #ifdef __cplusplus
 }

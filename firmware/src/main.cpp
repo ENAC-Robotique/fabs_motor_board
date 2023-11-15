@@ -17,7 +17,7 @@ extern "C" {
 #include "communication.h"
 #include "motors.h"
 #include "utils.h"
-#include "state_estimation.h"
+#include "locomotion.h"
 #include "power_check.h"
 #include "globalVar.h"
 
@@ -60,7 +60,7 @@ int main (void)
   chThdCreateStatic(waBlinker, sizeof(waBlinker), NORMALPRIO, &blinker, NULL); // lancement du thread
 
   start_power_check();
-  start_state_estimation();
+  start_locomotion();
   start_communication();
 
   // cette fonction en interne fait une boucle infinie, elle ne sort jamais

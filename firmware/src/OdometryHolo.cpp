@@ -60,8 +60,6 @@ void OdometryHolo::init() {
 
 
 void OdometryHolo::update() {
-  static systime_t lastOdomReportTime = chVTGetSystemTime();
-
   // motors position in mm
   Eigen::Vector3d motors_pos = get_motors_pos();
   // motors speed in mm/s
@@ -90,12 +88,6 @@ void OdometryHolo::update() {
 
   _position += robot_move_table;
   _position(2) = center_radians(_position(2));
-
-  
-  if(chVTTimeElapsedSinceX(lastOdomReportTime) > chTimeMS2I(PERIOD_ODOM_REPORT)) {
-    sendOdomReport();
-    lastOdomReportTime = chVTGetSystemTime();
-  }
 }
 
 
@@ -111,33 +103,6 @@ void OdometryHolo::update_filters()
 
 void OdometryHolo::set_pos(double x, double y, double theta) {
   _position = {x, y, theta};
-}
-
-
-msg_t OdometryHolo::sendOdomReport() {
-  //  Message msg;
-  // auto& pos_report = msg.mutable_pos();
-  // pos_report.set_x(get_x());
-  // pos_report.set_y(get_y());
-  // pos_report.set_theta(get_theta());
-  // msg_t ret = post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
-
-  auto mot_pos = get_motors_pos();
-  //chprintf ((BaseSequentialStream*)&SDU1, "%lf %lf %lf\r\n", get_x(), get_y(), get_theta());
-  //chprintf ((BaseSequentialStream*)&SDU1, "%lf %lf %lf\r\n", mot_pos[0], mot_pos[1], mot_pos[2]);
-
-  // if(ret != MSG_OK) {
-  //   return ret;
-  // }
-
-
-  // auto& speed_report = msg.mutable_speed();
-  // speed_report.set_vx(_speed_r[0]);
-  // speed_report.set_vy(_speed_r[1]);
-  // speed_report.set_vtheta(_speed_r[2]);
-  // ret = post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
-  // return ret;
-  return MSG_OK;
 }
 
 

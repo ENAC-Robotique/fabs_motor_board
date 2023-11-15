@@ -4,13 +4,12 @@ extern "C" {
     #include <ch.h>
     #include <hal.h>
     #include "printf.h"
-    #include "state_estimation.h"
     #include "stdutil.h"
 #ifdef __cplusplus
 }
 #endif
+#include "locomotion.h"
 #include "globalVar.h"
-#include "OdometryDiff.h"
 #include "communication.h"
 #include "BytesReadBuffer.h"
 #include "BytesWriteBuffer.h"
@@ -30,7 +29,7 @@ constexpr size_t NUM_CALLBACKS = 10;
 msg_callback_t callbacks[NUM_CALLBACKS] = {0};
 
 static const SerialConfig serialConfig =  {
-  57600,
+  115200,
   0,
   USART_CR2_STOP1_BITS | USART_CR2_LINEN,
   0

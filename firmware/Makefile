@@ -168,7 +168,7 @@ CPPSRC = $(ALLCPPSRC) \
           src/power_check.cpp \
           src/motors.cpp \
           src/OdometryHolo.cpp \
-          src/state_estimation.cpp \
+          src/locomotion.cpp \
           src/HolonomicControl.cpp \
           src/encoders.cpp \
           src/utils.cpp \

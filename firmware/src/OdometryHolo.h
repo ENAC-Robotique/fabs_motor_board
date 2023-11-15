@@ -38,7 +38,7 @@ public:
     void update_filters();
 
 private:
-    msg_t sendOdomReport();
+    
 
     Eigen::Vector3d prev_motors_pos;
 

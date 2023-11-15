@@ -17,6 +17,8 @@ public:
     void set_setPoints(Eigen::Vector3d pos, Eigen::Vector3d speed);
     void update();
 
+    Eigen::Vector3d get_cmds() { return _cmds;}
+
 private:
 
     void ramp_setpoint(double elapsed);
@@ -30,6 +32,9 @@ private:
     Eigen::Vector3d _speed_cons;
 
     PID pids[MOTORS_NB];
+
+    // keep commands for logging
+    Eigen::Vector3d _cmds;
 
     MUTEX_DECL(mut_set_point);
 };
