@@ -66,9 +66,10 @@ static THD_WORKING_AREA(waReport, 2000);
 void reporter_thd(void*) {
   chRegSetThreadName("Report");
   while(true) {
+    systime_t now = chVTGetSystemTime();
     sendOdomReport();
     sendMotorReport();
-    chThdSleepMilliseconds(200);
+    chThdSleepUntil(chTimeAddX(now, chTimeMS2I(PERIOD_CONTROL_REPORT)));
   }
 }
 
@@ -146,6 +147,8 @@ static msg_t sendMotorReport() {
   if((ret = send_pos_cons()) != MSG_OK) {
     return ret;
   }
+
+  return MSG_OK;
 }
 
 
@@ -180,5 +183,7 @@ static msg_t sendOdomReport() {
   if((ret = send_speed()) != MSG_OK) {
     return ret;
   }
+
+  return MSG_OK;
 
 }

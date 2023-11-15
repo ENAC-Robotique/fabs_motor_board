@@ -141,8 +141,6 @@ void HolonomicControl::ramp_setpoint(double dt) {
 
 void HolonomicControl::update()
 {
-  static systime_t lastControlReportTime = chVTGetSystemTime();
-
   //ramp_setpoint(dt);    // todo rate
 
   Eigen::Vector3d  motors_pos = odometry.get_motors_pos();
