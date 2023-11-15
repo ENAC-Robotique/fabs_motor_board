@@ -57,7 +57,7 @@ void HolonomicControl::init() {
 
 
   for(int i=0; i<MOTORS_NB; i++) {
-    pids[i].init(30);
+    pids[i].init(CONTROL_RATE, 30);
     pids[i].set_gains(10, 1, 0);
   }
 
@@ -153,8 +153,6 @@ void HolonomicControl::update()
 {
   static systime_t lastControlReportTime = chVTGetSystemTime();
 
-  double dt = CONTROL_PERIOD/1000.0;
-
   //ramp_setpoint(dt);    // todo rate
 
   Eigen::Vector3d  motors_pos = odometry.get_motors_pos();
@@ -166,7 +164,7 @@ void HolonomicControl::update()
   double cmds[MOTORS_NB];
 
   for(int i=0; i<MOTORS_NB; i++) {
-    cmds[i] = pids[i].update(pos_error[i], speed_error[i], dt);
+    cmds[i] = pids[i].update(pos_error[i], speed_error[i]);
   }
   
   mot1.set_cmd(cmds[0]);

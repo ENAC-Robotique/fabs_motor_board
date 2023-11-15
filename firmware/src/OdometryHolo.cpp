@@ -58,29 +58,6 @@ void OdometryHolo::init() {
   // register_callback(cb_recalage);
 }
 
-Eigen::Vector3d OdometryHolo::get_motors_pos() {
-  chMtxLock(&mut_hgf_pos);
-  Eigen::Vector3d motors_pos =
-  { enc1.get_pos(),
-    enc2.get_pos(),
-    enc3.get_pos()};
-  chMtxUnlock(&mut_hgf_pos);
-  return motors_pos;
-}
-
-Eigen::Vector3d OdometryHolo::get_motors_speed() {
-  chMtxLock(&mut_hgf_pos);
-  Eigen::Vector3d motors_pos =
-  { enc1.get_speed(),
-    enc2.get_speed(),
-    enc3.get_speed()};
-  chMtxUnlock(&mut_hgf_pos);
-  return motors_pos;
-}
-
-void OdometryHolo::set_pos(double x, double y, double theta) {
-  _position = {x, y, theta};
-}
 
 void OdometryHolo::update() {
   static systime_t lastOdomReportTime = chVTGetSystemTime();
@@ -121,6 +98,7 @@ void OdometryHolo::update() {
   }
 }
 
+
 void OdometryHolo::update_filters()
 {
   chMtxLock(&mut_hgf_pos);
@@ -129,6 +107,12 @@ void OdometryHolo::update_filters()
   enc3.update_filter();
   chMtxUnlock(&mut_hgf_pos);
 }
+
+
+void OdometryHolo::set_pos(double x, double y, double theta) {
+  _position = {x, y, theta};
+}
+
 
 msg_t OdometryHolo::sendOdomReport() {
   //  Message msg;
@@ -154,4 +138,25 @@ msg_t OdometryHolo::sendOdomReport() {
   // ret = post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
   // return ret;
   return MSG_OK;
+}
+
+
+Eigen::Vector3d OdometryHolo::get_motors_pos() {
+  chMtxLock(&mut_hgf_pos);
+  Eigen::Vector3d motors_pos =
+  { enc1.get_pos(),
+    enc2.get_pos(),
+    enc3.get_pos()};
+  chMtxUnlock(&mut_hgf_pos);
+  return motors_pos;
+}
+
+Eigen::Vector3d OdometryHolo::get_motors_speed() {
+  chMtxLock(&mut_hgf_pos);
+  Eigen::Vector3d motors_pos =
+  { enc1.get_speed(),
+    enc2.get_speed(),
+    enc3.get_speed()};
+  chMtxUnlock(&mut_hgf_pos);
+  return motors_pos;
 }

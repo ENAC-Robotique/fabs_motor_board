@@ -5,20 +5,26 @@
 class PID {
 
 public:
+
+    PID(): integral(0), prev_err(0), dt(0), kp(0), ki(0), kd(0), max_int_cmd(0) {}
     
-    void init(double int_max_cmd) {
-        integral = 0;
-        kp = 0;
-        ki = 0;
-        kd = 0;
+    /**
+     * rate in Hz
+     * int_max_cmd
+    */
+    void init(double rate, double int_max_cmd) {
+        dt = 1/rate;
         max_int_cmd = int_max_cmd;
     }
 
     /**
      * dt in seconds
     */
-    double update(double error, double speed_error, double dt) {
-        integral += error*dt;
+    double update(double error, double speed_error) {
+
+        // trapezoidal integration
+        integral += (prev_err + error)/2 * dt;
+        prev_err = error;
 
         if(ki != 0) {
             //saturate error integral such that the contribution of integrator to the cmd cannot exceed max_int_cmd.
@@ -42,6 +48,11 @@ public:
 
 private:
     double integral;
+    
+    // previous error, to compute a better estimate of the integral
+    double prev_err;
+
+    double dt;
 
     double kp;
     double ki;

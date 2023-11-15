@@ -20,25 +20,15 @@ static void encoders_thd(void* arg) {
   }
 }
 
-static THD_WORKING_AREA(waOdometry, 4000);
-
-static void odometry_thd(void* arg) {
-  (void)arg;
-  chRegSetThreadName("Odometry");
-
-  while (true)
-  {
-    systime_t now = chVTGetSystemTime();
-    odometry.update();
-    chThdSleepUntil(chTimeAddX(now, chTimeMS2I(ODOMETRY_PERIOD)));
-  }
-}
 
 static THD_WORKING_AREA(waControl, 4000);
 
+/**
+ * Odometry, guidance, control
+*/
 static void control_thd(void* arg) {
   (void)arg;
-  chRegSetThreadName("Holonomic speed control");
+  chRegSetThreadName("Odometry guidance control");
 
   // tmp
   Eigen::Vector3d pos_cons = {0, 0, 0};
@@ -49,24 +39,27 @@ static void control_thd(void* arg) {
   {
     systime_t now = chVTGetSystemTime();
 
-    //tmp
+    // odometry (sensing)
+    odometry.update();
+
+    // guidance TODO
     time_msecs_t t = chTimeI2MS(chTimeDiffX(start, now));
     double speed_x = 200 * sin(0.1 * 6.28*t/1000.0);
     speed_cons[0] = speed_x;
     pos_cons += speed_cons * CONTROL_PERIOD/1000.0;
     control.set_setPoints(pos_cons, speed_cons);
 
+    // control (acting)
     control.update();
+
     chThdSleepUntil(chTimeAddX(now, chTimeMS2I(CONTROL_PERIOD)));
   }
 }
 
-
-
 void start_state_estimation() {
   odometry.init();
+  //guidance.init();
   control.init();
   chThdCreateStatic(waEncoders, sizeof(waEncoders), NORMALPRIO, &encoders_thd, NULL);
-  chThdCreateStatic(waOdometry, sizeof(waOdometry), NORMALPRIO, &odometry_thd, NULL);
   chThdCreateStatic(waControl, sizeof(waControl), NORMALPRIO, &control_thd, NULL);
 }
