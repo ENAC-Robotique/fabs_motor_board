@@ -97,7 +97,9 @@ int check_messages(Message& dmsg, BytesReadBuffer& read_buffer) {
     if(_rcv_state == _RCV_LEN) {
         size_t ret = sdReadTimeout(&SD5, &_nb_bytes_expected, 1, TIME_IMMEDIATE);
         if(ret > 0) {
-            //chprintf ((BaseSequentialStream*)&SDU1, "Got len: %d\r\n", _nb_bytes_expected);
+            if(_nb_bytes_expected == 0) {
+                return COM_ERROR;
+            }
             _rcv_state = _RCV_PAYLOAD;
         }
     }
