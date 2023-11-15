@@ -82,5 +82,5 @@ int32_t Encoder::get_value() {
     lower_half = false;
   }
 
-  return static_cast<int32_t>(counter_val) - offset;
+  return static_cast<int32_t>(counter_val) + offset;
 }

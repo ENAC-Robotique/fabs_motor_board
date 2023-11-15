@@ -17,8 +17,9 @@ extern "C" {
 #include "communication.h"
 #include "motors.h"
 #include "utils.h"
-#include "speed_control.h"
+#include "state_estimation.h"
 #include "power_check.h"
+#include "globalVar.h"
 
   //LEDS :
   //LINE_LED_GREEN,
@@ -44,6 +45,8 @@ static void blinker (void *arg)
 }
 
 
+
+
 int main (void)
 {
 
@@ -54,10 +57,10 @@ int main (void)
   comm_init();
   consoleInit();	// initialisation des objets liés au shell
 
-  chThdCreateStatic(waBlinker, sizeof(waBlinker), NORMALPRIO, &blinker, NULL); // lancement du thread 
+  chThdCreateStatic(waBlinker, sizeof(waBlinker), NORMALPRIO, &blinker, NULL); // lancement du thread
 
   start_power_check();
-  start_motor_control_pid();
+  start_state_estimation();
   start_communication();
 
   // cette fonction en interne fait une boucle infinie, elle ne sort jamais

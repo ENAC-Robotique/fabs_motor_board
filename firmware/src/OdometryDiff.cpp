@@ -4,9 +4,9 @@
 
 extern "C" {
 #include "printf.h"
-#include "globalVar.h"
 #include "stdutil.h"
 }
+#include "globalVar.h"
 #include "utils.h"
 #include "communication.h"
 #include "BytesWriteBuffer.h"

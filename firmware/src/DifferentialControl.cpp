@@ -7,10 +7,9 @@
 #include "BytesWriteBuffer.h"
 #include "messages.h"
 #include "utils.h"
-
+#include "globalVar.h"
 extern "C" {
   #include "printf.h"
-  #include "globalVar.h"
   #include "stdutil.h"
     
 }

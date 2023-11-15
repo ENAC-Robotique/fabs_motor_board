@@ -6,7 +6,7 @@
 #include "encoders.h"
 
 #define MOTORS_NB 3
-#define PERIOD_ODOM_REPORT 100  // ms
+#define PERIOD_ODOM_REPORT 200  // ms
 
 constexpr double ROBOT_RADIUS = 108.54341185440282;
 constexpr double INC_PER_MM = 17.753023791070714;
@@ -32,6 +32,10 @@ public:
      */
     Eigen::Vector3d get_speed() {return _speed_r;}
 
+
+    Eigen::Vector3d get_motors_pos();
+    Eigen::Vector3d get_motors_speed();
+
     void update();
     void update_filters();
 
@@ -39,10 +43,12 @@ private:
     msg_t sendOdomReport();
 
     HighGainFilter pos_filters[MOTORS_NB];
-    double prev_pos[MOTORS_NB];
+    Eigen::Vector3d prev_motors_pos;
 
     Eigen::Vector3d _position;
     Eigen::Vector3d _speed_r;
+
+    MUTEX_DECL(mut_hgf_pos);
 
 };
 

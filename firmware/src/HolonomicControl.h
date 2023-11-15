@@ -2,45 +2,34 @@
 #include "utils.h"
 #include <hal.h>
 #include <Eigen/Core>
-
-typedef float float32_t;
-class OdometryHolo;
-
-#define CONTROL_PERIOD 25   //ms
+#include "pid.h"
+#include "OdometryHolo.h"
 
 #define SETPOINT_VALIDITY 1000  //ms
 
 class HolonomicControl {
 public:
 
-    HolonomicControl() : _ng(0), _kp(0), _ki(0), _kd(0) {}
+    HolonomicControl() {}
 
     void init();
 
-    void set_speed_setPoint(float vx, float vy, float vtheta);
-    void set_speed_setPoint_norm_dir(float speed, float direction, float omega);
-    void set_pid_gains(float ng, float kp, float ki, float kd);
-    void speed_control(OdometryHolo* odometry);
+    void set_setPoints(Eigen::Vector3d pos, Eigen::Vector3d speed);
+    void update();
 
 private:
 
-void ramp_setpoint(double elapsed);
-void integrate_error(Eigen::Vector3d error, double elapsed);
+    void ramp_setpoint(double elapsed);
 
-Eigen::Vector3d m_maxs_cmd = {100.,  100.,  100.};
+    systime_t setpoint_time;
+    systime_t control_time;
 
-float _ng; 
-float _kp;
-float _ki;
-float _kd;
+    Eigen::Vector3d _pos_setpoint;
+    Eigen::Vector3d _pos_cons;
+    Eigen::Vector3d _speed_setPoint;
+    Eigen::Vector3d _speed_cons;
 
-systime_t setpoint_time;
-systime_t control_time;
+    PID pids[MOTORS_NB];
 
-Eigen::Vector3d _setpoint_target;
-Eigen::Vector3d _speed_setPoint;
-Eigen::Vector3d _speed_integral_error;
-Eigen::Vector3d _speed_prev_error;
-
-MUTEX_DECL(mut_speed_set_point);
+    MUTEX_DECL(mut_set_point);
 };

@@ -5,10 +5,22 @@
 
 #ifdef __cplusplus
 #include "encoders.h"
+#include "motors.h"
+#include "OdometryHolo.h"
+#include "HolonomicControl.h"
+
 extern Encoder enc1;
 extern Encoder enc2;
 extern Encoder enc3;
 extern Encoder enc4;
+
+extern Motor mot1;
+extern Motor mot2;
+extern Motor mot3;
+
+extern OdometryHolo odometry;
+
+extern HolonomicControl control;
 
 #endif
 

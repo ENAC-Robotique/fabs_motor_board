@@ -5,12 +5,11 @@ extern "C" {
 #endif
     #include "ch.h"
     #include "hal.h"
-    #include "globalVar.h"
 #ifdef __cplusplus
 }
 #endif
 //#include "printf.h"
-
+#include "globalVar.h"
 #include "BytesWriteBuffer.h"
 #include "utils.h"
 #include "messages.h"
@@ -33,8 +32,7 @@ ADCConversionGroup adc1cfg = {
   .smpr2 = ADC_SMPR2_SMP_AN9(ADC_SAMPLE_480),
   .sqr1 = ADC_SQR1_NUM_CH(1),
   .sqr2 = 0,  // sequence 7 to 12 unused
-  .sqr3 = ADC_SQR3_SQ1_N(ADC_CHANNEL_IN9)
-
+  .sqr3 = ADC_SQR3_SQ1_N(ADC_CHANNEL_IN9),
 };
 
 

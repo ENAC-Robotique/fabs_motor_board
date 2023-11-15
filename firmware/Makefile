@@ -5,7 +5,7 @@
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16
+  USE_OPT = -O0 -ggdb -fomit-frame-pointer -falign-functions=16
 endif
 
 # C specific options here (added to USE_OPT).
@@ -168,7 +168,7 @@ CPPSRC = $(ALLCPPSRC) \
           src/power_check.cpp \
           src/motors.cpp \
           src/OdometryHolo.cpp \
-          src/speed_control.cpp \
+          src/state_estimation.cpp \
           src/HolonomicControl.cpp \
           src/encoders.cpp \
           src/utils.cpp \

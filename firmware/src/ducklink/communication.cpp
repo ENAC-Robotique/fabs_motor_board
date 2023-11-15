@@ -3,15 +3,13 @@ extern "C" {
 #endif
     #include <ch.h>
     #include <hal.h>
-    
     #include "printf.h"
-    #include "globalVar.h"
-    #include "speed_control.h"
+    #include "state_estimation.h"
     #include "stdutil.h"
 #ifdef __cplusplus
 }
 #endif
-
+#include "globalVar.h"
 #include "OdometryDiff.h"
 #include "communication.h"
 #include "BytesReadBuffer.h"

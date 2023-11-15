@@ -1,9 +1,7 @@
-#ifndef __PWM_CONFIG_H__
-#define __PWM_CONFIG_H__
-
+#pragma once
 #include <ch.h>
 #include <hal.h>
-
+#include "pid.h"
 // max switching frequency : 2kHz, whatever it means
 //
 // max switching time = 30 µs
@@ -12,37 +10,21 @@
 // 250 steps : 5ms => 200 Hz  Is that enough ?????
 //
 
-
-void initPwms(void);
-
 #ifdef __cplusplus
 
+class Motor {
+public:
+  Motor(PWMDriver* pwmd, PWMConfig* config, pwmchannel_t ch1, pwmchannel_t ch2): pwmd(pwmd), config(config), ch1(ch1), ch2(ch2) {}
+  void init();
+  void set_cmd(float cmd);
 
-template<PWMDriver* D, pwmchannel_t CH1, pwmchannel_t CH2>
-  void setMot(float speed);
+private:
 
-// MOT1 : TIM5_CH1 TIM5_CH2
-constexpr auto setMot1 = setMot<&PWMD5, 0, 1>;
-//MOT2 : TIM5_CH3 TIM5_CH4
-constexpr auto setMot2 = setMot<&PWMD5, 2, 3>;
-//MOT3 : TIM1_CH1 TIM1_CH2
-constexpr auto setMot3 = setMot<&PWMD1, 0, 1>;
+  PWMDriver* pwmd;
+  PWMConfig* config;
+  pwmchannel_t ch1;
+  pwmchannel_t ch2;
+};
 
 #endif
 
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-  void setmot1(float speed);
-  void setmot2(float speed);
-  void setmot3(float speed);
-
-
-#ifdef __cplusplus
-}
-#endif
-
-
-#endif // __PWM_CONFIG_H__

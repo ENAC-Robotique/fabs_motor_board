@@ -8,7 +8,7 @@ extern "C" {
 
 #include <inttypes.h>
 
-void start_motor_control_pid(void);
+void start_state_estimation(void);
 
 #ifdef __cplusplus
 }
