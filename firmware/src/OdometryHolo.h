@@ -9,8 +9,6 @@
 #define PERIOD_ODOM_REPORT 200  // ms
 
 constexpr double ROBOT_RADIUS = 108.54341185440282;
-constexpr double INC_PER_MM = 17.753023791070714;
-
 
 extern const Eigen::Matrix<double, 3, 3> D;
 
@@ -42,7 +40,6 @@ public:
 private:
     msg_t sendOdomReport();
 
-    HighGainFilter pos_filters[MOTORS_NB];
     Eigen::Vector3d prev_motors_pos;
 
     Eigen::Vector3d _position;

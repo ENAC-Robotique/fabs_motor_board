@@ -26,8 +26,6 @@ constexpr double THETA1 = 0;
 constexpr double THETA2 = -2.0*M_PI/3.0;
 constexpr double THETA3 = 2.0*M_PI/3.0;
 
-const double F = 0.8750322081937646;
-
 // Euclidean speeds into motor speeds: m = Dv
 const Eigen::Matrix<double, 3, 3> D {
   {-sin(THETA1), cos(THETA1), ROBOT_RADIUS},
@@ -39,26 +37,12 @@ const Eigen::Matrix<double, 3, 3> D {
 const Eigen::Matrix<double, 3, 3> Dinv = D.inverse();
 
 
-
-constexpr float POS_ALPHA0 = 2.4f;
-constexpr float POS_ALPHA1 = 2.08f;
-constexpr float POS_ALPHA2 = 0.64f;
-constexpr float POS_EPS = 0.04f; // 0.02
-
-std::array<double, 3> alphas = {POS_ALPHA0, POS_ALPHA1, POS_ALPHA2};
-
-
-
 void OdometryHolo::init() {
   enc1.init(true);
   enc2.init(true);
   enc3.init(true);
   //enc4.init(true);
   
-  for(int i=0; i<3; i++) {
-    pos_filters[i].init(alphas, POS_EPS, 40);
-  }
-
   _position = {0, 0, 0};
   prev_motors_pos = get_motors_pos();
   _speed_r = {0, 0, 0};
@@ -77,9 +61,9 @@ void OdometryHolo::init() {
 Eigen::Vector3d OdometryHolo::get_motors_pos() {
   chMtxLock(&mut_hgf_pos);
   Eigen::Vector3d motors_pos =
-  { pos_filters[0].get_pos(),
-    pos_filters[1].get_pos(),
-    pos_filters[2].get_pos()};
+  { enc1.get_pos(),
+    enc2.get_pos(),
+    enc3.get_pos()};
   chMtxUnlock(&mut_hgf_pos);
   return motors_pos;
 }
@@ -87,9 +71,9 @@ Eigen::Vector3d OdometryHolo::get_motors_pos() {
 Eigen::Vector3d OdometryHolo::get_motors_speed() {
   chMtxLock(&mut_hgf_pos);
   Eigen::Vector3d motors_pos =
-  { pos_filters[0].get_speed(),
-    pos_filters[1].get_speed(),
-    pos_filters[2].get_speed()};
+  { enc1.get_speed(),
+    enc2.get_speed(),
+    enc3.get_speed()};
   chMtxUnlock(&mut_hgf_pos);
   return motors_pos;
 }
@@ -112,7 +96,7 @@ void OdometryHolo::update() {
 
   prev_motors_pos = motors_pos;
 
-  _speed_r = Dinv * (motors_speeds / INC_PER_MM);
+  _speed_r = Dinv * motors_speeds;
 
   // hypothesis: the movement is approximated as a straight line at heading [ oldTheta + dTheta/2 ]
   double theta_mean = _position[2] + robot_move_r[2]/2;
@@ -140,9 +124,9 @@ void OdometryHolo::update() {
 void OdometryHolo::update_filters()
 {
   chMtxLock(&mut_hgf_pos);
-  pos_filters[0].process((enc1.get_value() / INC_PER_MM) * F);
-  pos_filters[1].process(enc2.get_value() / INC_PER_MM);
-  pos_filters[2].process(enc3.get_value() / INC_PER_MM);
+  enc1.update_filter();
+  enc2.update_filter();
+  enc3.update_filter();
   chMtxUnlock(&mut_hgf_pos);
 }
 

@@ -4,10 +4,13 @@
 /*
  * Encoders
  */
-Encoder enc1(STM32_TIM4);
-Encoder enc2(STM32_TIM8);
-Encoder enc3(STM32_TIM2);
-Encoder enc4(STM32_TIM3);
+constexpr double INC_PER_MM = 17.753023791070714;
+const double F = 0.8750322081937646;
+
+Encoder enc1(STM32_TIM4, INC_PER_MM / F);
+Encoder enc2(STM32_TIM8, INC_PER_MM);
+Encoder enc3(STM32_TIM2, INC_PER_MM);
+Encoder enc4(STM32_TIM3, INC_PER_MM);
 
 
 

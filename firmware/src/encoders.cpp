@@ -5,9 +5,19 @@
 #include <cstdint>
 #include "stm32_tim.h"
 
+constexpr float POS_ALPHA0 = 2.4f;
+constexpr float POS_ALPHA1 = 2.08f;
+constexpr float POS_ALPHA2 = 0.64f;
+constexpr float POS_EPS = 0.04f; // 0.02
 
-Encoder::Encoder(stm32_tim_t* tim): tim(tim), offset(0), lower_half(true)
+std::array<double, 3> alphas = {POS_ALPHA0, POS_ALPHA1, POS_ALPHA2};
+
+
+Encoder::Encoder(stm32_tim_t* tim, double inc_to_mm):
+tim(tim), offset(0),
+lower_half(true), inc_to_mm(inc_to_mm)
 {
+  pos_filter.init(alphas, POS_EPS, 40);
 }
 
 void Encoder::init(bool inverted) {
@@ -83,4 +93,9 @@ int32_t Encoder::get_value() {
   }
 
   return static_cast<int32_t>(counter_val) + offset;
+}
+
+void Encoder::update_filter()
+{
+  pos_filter.process(get_value() / inc_to_mm);
 }
