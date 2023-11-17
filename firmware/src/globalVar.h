@@ -8,6 +8,7 @@
 #include "motors.h"
 #include "OdometryHolo.h"
 #include "HolonomicControl.h"
+#include "guidance.h"
 
 extern Encoder enc1;
 extern Encoder enc2;
@@ -21,6 +22,8 @@ extern Motor mot3;
 extern OdometryHolo odometry;
 
 extern HolonomicControl control;
+
+extern Guidance guidance;
 
 #endif
 

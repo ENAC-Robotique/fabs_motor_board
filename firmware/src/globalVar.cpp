@@ -76,7 +76,7 @@ Motor mot3(&PWMD5, &pwmcfg5, 2, 3);   // MOT3 : TIM5_CH3 TIM5_CH4
 
 OdometryHolo odometry;
 HolonomicControl control;
-
+Guidance guidance;
 /*
  * USB Driver structure.
  */

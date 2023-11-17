@@ -3,6 +3,7 @@
 #include "ch.h"
 #include "communication.h"
 
+
 using namespace protoduck;
 
 /**
@@ -37,4 +38,15 @@ msg_t post_message(Message& msg, Message::MsgType msg_type, sysinterval_t timeou
   msg.serialize(*buffer);
   // post the new message for the communication thread. no timeout.
   return chMBPostTimeout(&mb_filled_msgs, (msg_t)buffer, TIME_IMMEDIATE);
+}
+
+
+msg_t msg_send_pos(Eigen::Vector3d pos, Pos::PosObject obj) {
+  Message msg;
+  auto& pos_report = msg.mutable_pos();
+  pos_report.set_obj(obj);
+  pos_report.set_x(pos[0]);
+  pos_report.set_y(pos[1]);
+  pos_report.set_theta(pos[2]);
+  return post_message(msg, Message::MsgType::STATUS, TIME_IMMEDIATE);
 }

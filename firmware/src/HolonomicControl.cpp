@@ -62,36 +62,19 @@ void HolonomicControl::init() {
     pids[i].set_gains(10, 1, 0);
   }
 
+  auto set_pid_gains_cb = [this](Message& msg) {
+    if(msg.has_motor_pid() && msg.msg_type() == Message::MsgType::COMMAND) {
+        auto motor_no = msg.motor_pid().motor_no();
+        auto kp = msg.motor_pid().kp();
+        auto ki = msg.motor_pid().ki();
+        auto kd = msg.motor_pid().kd();
+        if(motor_no < MOTORS_NB) {
+          pids[motor_no].set_gains(kp, ki, kd);
+        }
+      }
+  };
 
-  // set_pid_gains(0.1, 0.2, 0.8, 0.);
-
-  // control_time = chVTGetSystemTime();
-  // setpoint_time = chVTGetSystemTime();
-
-  // auto set_setpoint_cb = [this](Message& msg) {
-  //   if (msg.has_speed() && msg.msg_type() == Message::MsgType::COMMAND) {
-  //         auto vx = msg.speed().vx();
-  //         auto vy = msg.speed().vy();
-  //         auto vtheta = msg.speed().vtheta();
-  //         //chprintf ((BaseSequentialStream*)&SDU1, "Speed cmd: %f, %f, %f\r\n\r\n", vx, vy, vtheta);
-  //         set_speed_setPoint(vx, vy, vtheta);
-  //     }
-  // };
-
-  // auto set_pid_gains_cb = [this](Message& msg) {
-  //   if(msg.has_motor_pid() && msg.msg_type() == Message::MsgType::COMMAND) {
-  //       //auto motor_no = msg.motor_pid().motor_no();
-  //       auto feedforward = msg.motor_pid().feedforward();
-  //       auto kp = msg.motor_pid().kp();
-  //       auto ki = msg.motor_pid().ki();
-  //       auto kd = msg.motor_pid().kd();
-  //       // acquire lock ?!
-  //       set_pid_gains(feedforward, kp, ki, kd);
-  //     }
-  // };
-
-  // register_callback(set_setpoint_cb);
-  // register_callback(set_pid_gains_cb);
+  register_callback(set_pid_gains_cb);
 }
 
 

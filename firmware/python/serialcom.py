@@ -71,6 +71,8 @@ class Duckoder(Protocol):
         #popo = msg_name
         if msg_name == 'motors':
             msg_name = msg.motors.MotorDataType.Name(msg.motors.type)
+        elif msg_name == 'pos':
+            msg_name = msg.pos.PosObject.Name(msg.pos.obj)
         d = {msg_name: {}}
         for f in inner.DESCRIPTOR.fields:
             field_name = f.name

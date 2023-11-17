@@ -174,7 +174,8 @@ CPPSRC = $(ALLCPPSRC) \
           src/utils.cpp \
           src/main.cpp \
           src/high_gain_filter.cpp \
-          src/globalVar.cpp
+          src/globalVar.cpp \
+          src/guidance.cpp
 
 # src/OdometryDiff.cpp \
 # src/DifferentialControl.cpp \
