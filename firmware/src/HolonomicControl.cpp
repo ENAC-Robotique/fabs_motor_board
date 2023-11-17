@@ -89,7 +89,7 @@ void HolonomicControl::set_setPoints(Eigen::Vector3d pos, Eigen::Vector3d speed)
     // _pos_cons = pos;
     // _speed_cons = speed;
 
-    _pos_cons = D * pos;
+    _pos_cons = D * pos + odometry.get_motors_pos();
     _speed_cons = D * speed;
 
     // _pos_setpoint = D * pos;
