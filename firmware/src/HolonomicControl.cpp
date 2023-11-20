@@ -16,7 +16,6 @@ extern "C" {
 #include <cmath>
 #include "OdometryHolo.h" 
 #include "motors.h"
-#include "BytesWriteBuffer.h"
 #include "utils.h"
 #include "messages.h"
 #include "communication.h"
@@ -37,8 +36,6 @@ extern "C" {
 
 using namespace protoduck;
 
-const Eigen::Vector3d ACCEL_MAX = {2000.0, 2000.0, 20.};
-
 void HolonomicControl::init() {
 
   mot1.init();
@@ -49,13 +46,9 @@ void HolonomicControl::init() {
   mot2.set_cmd(0);
   mot3.set_cmd(0);
 
-
-  _pos_setpoint = {0, 0, 0};
   _pos_cons = {0, 0, 0};
-  _speed_setPoint = {0, 0, 0};
   _speed_cons = {0, 0, 0};
   _cmds = {0, 0, 0};
-
 
   for(int i=0; i<MOTORS_NB; i++) {
     pids[i].init(CONTROL_RATE, 30);
@@ -82,50 +75,14 @@ void HolonomicControl::init() {
  * pos: position setpoint in robot frame
  * speed: speed setpoint in robot frame, relative to earth
 */
-void HolonomicControl::set_setPoints(Eigen::Vector3d pos, Eigen::Vector3d speed)
+void HolonomicControl::set_cons(Eigen::Vector3d posRobotR, Eigen::Vector3d vRobotR)
 {
-    chMtxLock(&mut_set_point);
-    // //tmp
-    // _pos_cons = pos;
-    // _speed_cons = speed;
-
-    _pos_cons = D * pos + odometry.get_motors_pos();
-    _speed_cons = D * speed;
-
-    // _pos_setpoint = D * pos;
-    // _speed_setPoint = D * speed;
-    chMtxUnlock(&mut_set_point);
-}
-
-
-/**
- * dt in seconds
-*/
-void HolonomicControl::ramp_setpoint(double dt) {
-  Eigen::Vector3d  motors_pos = odometry.get_motors_pos();
-  Eigen::Vector3d  motors_speed = odometry.get_motors_speed();
-
-  // compute max and min pos cons according to current position and speed, and maximum acceleration
-  auto max_pos_cons = motors_pos + motors_speed*dt + ACCEL_MAX*dt*dt/2;
-  auto min_pos_cons = motors_pos + motors_speed*dt - ACCEL_MAX*dt*dt/2;
-  // compute max and min speed cons according to current speed and maximum acceleration
-  auto max_speed_cons = motors_speed + ACCEL_MAX*dt;
-  auto min_speed_cons = motors_speed - ACCEL_MAX*dt;
-
-  chMtxLock(&mut_set_point);
-  // clamp _pos_cons
-  auto h_pos = _pos_setpoint.array().min(max_pos_cons.array());
-  _pos_cons = h_pos.max(min_pos_cons.array());
-  // clamp _speed_cons
-  auto h_speed = _speed_setPoint.array().min(max_speed_cons.array());
-  _speed_cons = h_speed.max(min_speed_cons.array());
-  chMtxUnlock(&mut_set_point);
+    _pos_cons = (D * posRobotR) + odometry.get_motors_pos();
+    _speed_cons = D * vRobotR;
 }
 
 void HolonomicControl::update()
 {
-  //ramp_setpoint(dt);    // todo rate
-
   Eigen::Vector3d  motors_pos = odometry.get_motors_pos();
   Eigen::Vector3d  motors_speed = odometry.get_motors_speed();
 

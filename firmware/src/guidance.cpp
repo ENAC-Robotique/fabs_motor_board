@@ -55,7 +55,7 @@ void Guidance::update()
     
     Eigen::Vector3d vConsR = vCarrotR + 0.1 * pCarrotR; // P(id)
 
-    control.set_setPoints(pCarrotR, vConsR);
+    control.set_cons(pCarrotR, vConsR);
 
 
     if(chTimeI2MS(chTimeDiffX(last, now)) > 100) {

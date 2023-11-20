@@ -63,7 +63,7 @@ static void control_thd(void* arg) {
     // double speed_x = 200 * sin(0.2 * 6.28*t/1000.0);
     // speed_cons[0] = speed_x;
     // pos_cons += speed_cons * CONTROL_PERIOD/1000.0;
-    // control.set_setPoints(pos_cons, speed_cons);
+    // control.set_cons(pos_cons, speed_cons);
 
     // control (acting)
     control.update();
