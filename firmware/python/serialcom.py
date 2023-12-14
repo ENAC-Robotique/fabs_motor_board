@@ -8,6 +8,8 @@ from enum import Enum
 import messages_pb2 as pb
 import json
 import socket
+import struct
+from math import sin
 
 plotjuggler_udp = ("127.0.0.1", 9870)
 
@@ -80,6 +82,16 @@ class Duckoder(Protocol):
         return json.dumps(d)
 
 
+def serialize(msg):
+    payload = msg.SerializeToString()
+    chk = 0
+    for c in payload:
+        chk ^= c
+    data = bytearray()
+    data += struct.pack('BBB', 0xff, 0xff, len(payload))
+    data += payload
+    data += struct.pack('B', chk)
+    return data
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -90,5 +102,16 @@ if __name__ == "__main__":
 
     ser=Serial(port, baudrate)
     with ReaderThread(ser, Duckoder) as p:
+        start_time = time.time()
         while True:
-            time.sleep(1)
+            m = pb.Message()
+            m.msg_type = pb.Message.MsgType.COMMAND
+            m.pos.obj = pb.Pos.PosObject.POS_CARROT_W
+            dt = time.time() - start_time
+            m.pos.x = 100*sin(dt)
+            m.pos.y = 0
+            m.pos.theta = 0
+            data = serialize(m)
+            ser.write(data)
+            
+            time.sleep(0.005)

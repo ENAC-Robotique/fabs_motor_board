@@ -4,6 +4,8 @@
 #include "config.h"
 #include "messages.h"
 #include "utils.h"
+#include "communication.h"
+
 using namespace protoduck;
 
 const Eigen::Vector3d ACCEL = {200.0, 200.0, 2.};
@@ -13,6 +15,22 @@ void Guidance::init(double rate)
 {
     target = odometry.get_pos();
     dt = 1/rate;
+
+    auto set_pos_target = [this](Message& msg) {
+        if(msg.has_pos() && msg.msg_type() == Message::MsgType::COMMAND) {
+            auto obj = msg.pos().get_obj();
+            if(obj == Pos::PosObject::POS_CARROT_W) {
+                auto x_target = msg.pos().get_x();
+                auto y_target = msg.pos().get_y();
+                auto theta_target = msg.pos().get_theta();
+                //msg_send_pos({x_target, y_target, theta_target}, Pos::PosObject::POS_CARROT_R);
+                palToggleLine(LINE_LED_ORANGE);
+                setTarget({x_target, y_target, theta_target});
+            }
+        }
+  };
+
+  register_callback(set_pos_target);
 }
 
 void Guidance::update()
@@ -35,63 +53,32 @@ void Guidance::update()
 
     systime_t now = chVTGetSystemTime();
     double t = chTimeI2MS(chTimeDiffX(start_time, now)) / 1000.0;
-    double alpha = t/travel_time;
-    Eigen::Vector3d pCarrotW;
-    Eigen::Vector3d vCarrotW;
-    if(alpha < 1) {    
-        pCarrotW = start_point + alpha * (target - start_point);
-        Eigen::Vector3d dir = (target - start_point).normalized();
-        vCarrotW = dir.cwiseProduct(MAX_SPEED);
-    } else {
-        pCarrotW = target;
-        vCarrotW = {0, 0, 0};
-    }
 
-    // Eigen::Vector3d pCarrotW = {200, 0, 0};
-    // Eigen::Vector3d vCarrotW = {0, 0, 0};
+    // if(t > 0.2) {
 
-    Eigen::Vector3d pCarrotR = rot * (pCarrotW - pRobotW);
-    Eigen::Vector3d vCarrotR = rot * vCarrotW;
+    // }
+
+
+    Eigen::Vector3d pCarrotR = rot * (target - pRobotW);
+    //Eigen::Vector3d vCarrotR = rot * vCarrotW;
     
-    Eigen::Vector3d vConsR = vCarrotR + 0.1 * pCarrotR; // P(id)
+    // Eigen::Vector3d vConsR = vCarrotR + 0.1 * pCarrotR; // P(id)
 
-    control.set_cons(pCarrotR, vConsR);
+    control.set_cons(pCarrotR, {0, 0, 0});
 
 
-    if(chTimeI2MS(chTimeDiffX(last, now)) > 100) {
-        last = now;
+    // if(chTimeI2MS(chTimeDiffX(last, now)) > 100) {
+    //     last = now;
 
-        msg_send_pos(pCarrotW, Pos::PosObject::POS_CARROT_W);
-        msg_send_pos(pCarrotR, Pos::PosObject::POS_CARROT_R);
-    }
+    //     msg_send_pos(pCarrotW, Pos::PosObject::POS_CARROT_W);
+    //     msg_send_pos(pCarrotR, Pos::PosObject::POS_CARROT_R);
+    // }
 
 }
 
 void Guidance::setTarget(Eigen::Vector3d target)
 {
-    // TODO si en cours de route ?
-    //      si le point est très proche ?
-
     this->target = target;
-    this->start_point = odometry.get_pos();
-
-    auto diff = target-start_point;
-
-
-    Eigen::Vector3d d1 = MAX_SPEED.cwiseProduct(MAX_SPEED).cwiseQuotient(2*ACCEL);
-
-
-    auto T = (ACCEL.cwiseProduct(diff) - MAX_SPEED.cwiseProduct(MAX_SPEED)).cwiseQuotient(ACCEL.cwiseProduct(MAX_SPEED));
-    factors = T / T.maxCoeff();
-
-    travel_accel = ACCEL.cwiseProduct(factors);
-    // Eigen::Vector3d travel_max_speed = MAX_SPEED.cwiseProduct(factors);
-
-    // Eigen::Vector3d t1 = travel_max_speed.cwiseQuotient(travel_accel);
-    // Eigen::Vector3d t2 = T - t1;
-
-
-    travel_time = T.maxCoeff();
-
+    // this->start_point = odometry.get_pos();
     start_time =chVTGetSystemTime();
 }

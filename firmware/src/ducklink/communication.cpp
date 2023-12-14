@@ -136,6 +136,7 @@ int check_messages(Message& dmsg, BytesReadBuffer& read_buffer) {
             if(chk == msg_chk) {
                 auto err = dmsg.deserialize(read_buffer);
                 if(err == EmbeddedProto::Error::NO_ERRORS) {
+                    palToggleLine(LINE_LED_YELLOW);
                     return COM_OK;    
                 }
                 else {
@@ -143,6 +144,7 @@ int check_messages(Message& dmsg, BytesReadBuffer& read_buffer) {
                     return COM_ERROR;
                 }
             } else {
+                //palToggleLine(LINE_LED_RED);
                 chprintf ((BaseSequentialStream*)&SDU1, "chk failed!\r\n\r\n");
                 return COM_ERROR;
             }
@@ -198,6 +200,7 @@ static void el_communicator (void *arg)
     
     int ret = check_messages(msg, read_buffer);
     if(ret == COM_OK) {
+      palToggleLine(LINE_LED_RED);
       for(size_t i=0; i<NUM_CALLBACKS; i++) {
           if(callbacks[i]) {
               callbacks[i](msg);

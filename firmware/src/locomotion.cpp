@@ -27,7 +27,7 @@ static void encoders_thd(void* arg) {
 }
 
 
-static THD_WORKING_AREA(waControl, 40000);
+static THD_WORKING_AREA(waControl, 80000);
 
 /**
  * Odometry, guidance, control
@@ -41,29 +41,22 @@ static void control_thd(void* arg) {
   Eigen::Vector3d speed_cons = {100, 0, 0};
   systime_t start = chVTGetSystemTime();
 
-  int c=0;
-  
   while (true)
   {
-
-    if(c++ >= 1000) {
-      c = 0;
-      guidance.setTarget({500, 0, 0});
-    }
 
     systime_t now = chVTGetSystemTime();
 
     // odometry (sensing)
     odometry.update();
 
-    // guidance TODO
-    guidance.update();
-
     // time_msecs_t t = chTimeI2MS(chTimeDiffX(start, now));
     // double speed_x = 200 * sin(0.2 * 6.28*t/1000.0);
     // speed_cons[0] = speed_x;
     // pos_cons += speed_cons * CONTROL_PERIOD/1000.0;
-    // control.set_cons(pos_cons, speed_cons);
+    // guidance.setTarget(pos_cons);
+
+    // guidance TODO
+    guidance.update();
 
     // control (acting)
     control.update();
@@ -72,7 +65,7 @@ static void control_thd(void* arg) {
   }
 }
 
-static THD_WORKING_AREA(waReport, 2000);
+static THD_WORKING_AREA(waReport, 4000);
 void reporter_thd(void*) {
   chRegSetThreadName("Report");
   while(true) {
@@ -87,10 +80,9 @@ void start_locomotion() {
   odometry.init();
   guidance.init(CONTROL_RATE);
   control.init();
-  guidance.setTarget({500, 0, 0});
   chThdCreateStatic(waEncoders, sizeof(waEncoders), NORMALPRIO, &encoders_thd, NULL);
   chThdCreateStatic(waControl, sizeof(waControl), NORMALPRIO, &control_thd, NULL);
-  chThdCreateStatic(waReport, sizeof(waReport), NORMALPRIO-1, &reporter_thd, NULL);
+  //chThdCreateStatic(waReport, sizeof(waReport), NORMALPRIO-1, &reporter_thd, NULL);
 }
 
 

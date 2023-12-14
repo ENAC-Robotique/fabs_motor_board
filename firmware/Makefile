@@ -257,6 +257,8 @@ $(OBJS): $(CONFDIR)/board.h
 $(CONFDIR)/board.h: $(CONFDIR)/board.cfg
 	$(BOARDGEN)  --no-pp-line   $<  $@
 
+flash: all
+	gdb-multiarch -x flash.gdb build/ch.elf
 
 generate: $(PROTO_HDR)
 	$(info Done generating source files based on *.proto files.)
